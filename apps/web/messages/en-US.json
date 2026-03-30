@@ -1,0 +1,25 @@
+{
+  "common": {
+    "appName": "Fenix",
+    "signIn": "Sign in",
+    "signOut": "Sign out",
+    "loading": "Loading...",
+    "error": "Something went wrong",
+    "save": "Save",
+    "cancel": "Cancel",
+    "delete": "Delete",
+    "edit": "Edit",
+    "create": "Create",
+    "search": "Search..."
+  },
+  "auth": {
+    "signInTitle": "Welcome back",
+    "signInDescription": "Sign in to your account to continue",
+    "signInWithGoogle": "Continue with Google",
+    "signInWithGithub": "Continue with GitHub"
+  },
+  "dashboard": {
+    "title": "Dashboard",
+    "welcome": "Welcome, {name}"
+  }
+}

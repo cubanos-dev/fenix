@@ -1,0 +1,23 @@
+{
+  "version": "0.0.1",
+  "configurations": [
+    {
+      "name": "web",
+      "runtimeExecutable": "bunx",
+      "runtimeArgs": ["turbo", "dev", "--filter=@fenix/web"],
+      "port": 3000
+    },
+    {
+      "name": "api",
+      "runtimeExecutable": "bash",
+      "runtimeArgs": ["-c", "cd apps/api && ./dev.sh"],
+      "port": 8000
+    },
+    {
+      "name": "storybook",
+      "runtimeExecutable": "bun",
+      "runtimeArgs": ["run", "--cwd", "apps/web", "storybook"],
+      "port": 6006
+    }
+  ]
+}

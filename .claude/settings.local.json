@@ -1,0 +1,34 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(find:*)",
+      "Bash(bun run build:*)",
+      "Bash(bun run test:*)",
+      "Bash(bun run format:*)",
+      "Bash(bun run format:check:*)",
+      "Bash(bun run typecheck:*)",
+      "Bash(bun run lint:*)",
+      "Bash(bun run validate:*)",
+      "Bash(bun run storybook:*)",
+      "Bash(bun run db:migrate:*)",
+      "Bash(bun install:*)",
+      "Bash(bunx turbo:*)",
+      "Bash(bunx biome:*)",
+      "Bash(bunx eslint:*)",
+      "Bash(bunx tsc:*)",
+      "Bash(git status:*)",
+      "Bash(git diff:*)",
+      "Bash(git log:*)",
+      "Bash(git add:*)",
+      "Bash(git commit:*)",
+      "Bash(git reset:*)",
+      "Bash(git branch:*)",
+      "Bash(git checkout:*)",
+      "Bash(git switch:*)",
+      "Bash(vercel env:*)",
+      "Bash(npx shadcn@latest:*)",
+      "Bash(npx ai-elements:*)",
+      "mcp__Claude_Preview__preview_start"
+    ]
+  }
+}

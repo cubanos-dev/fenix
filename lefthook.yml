@@ -1,0 +1,19 @@
+pre-commit:
+  parallel: true
+  jobs:
+    - name: format
+      glob: "apps/**/*.{ts,tsx,json}"
+      run: bunx biome format --write {staged_files}
+      stage_fixed: true
+    - name: lint
+      glob: "apps/**/*.{ts,tsx}"
+      run: bunx eslint {staged_files}
+    - name: typecheck
+      run: bunx turbo typecheck
+
+pre-push:
+  jobs:
+    - name: build
+      run: bunx turbo build
+    - name: test
+      run: bunx turbo test
