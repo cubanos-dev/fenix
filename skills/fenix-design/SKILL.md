@@ -40,8 +40,8 @@ This skill covers both creating and implementing designs in pen files. Pen desig
 - Discuss brand identity, mood, color palette, typography, spacing with the user
 - Document decisions in the phase context
 
-### 2. Create/Update Design System (before `/gsd:plan-phase`)
-- Create or update the design system pen file with:
+### 2. Create Design System (once, at project start)
+- Create the design system pen file with:
   - Color palette (primary, secondary, accent, destructive, muted, background, foreground)
   - Typography scale (font families, sizes, weights, line heights)
   - Spacing scale
@@ -49,14 +49,16 @@ This skill covers both creating and implementing designs in pen files. Pen desig
   - Component patterns (buttons, cards, inputs, navigation, etc.)
   - Dark mode variants
 - This is the single source of truth for all visual decisions
+- **Created once.** Do not regenerate. Only extend when gaps are found (e.g., a new screen needs a color role or component pattern that doesn't exist yet).
 
 ### 3. Design Screens (during planning or as a pre-execution step)
 - Create screen designs in pen files matching the requirements
+- Use existing design system tokens — do not introduce new colors/fonts/spacing ad hoc
 - Follow the page/screen/component architecture:
   - Design the full screen layout (what `_components/screen.tsx` will render)
   - Break out reusable component patterns
 - Every required screen should have a pen design before execution starts
-- If design gaps exist, create the missing designs before proceeding
+- If a screen needs something the design system doesn't cover, extend the design system first (gap fill), then use it
 
 ### 4. Implement to Match (during `/gsd:execute-phase`)
 - Build components that match the pen designs exactly using the existing theme tokens
