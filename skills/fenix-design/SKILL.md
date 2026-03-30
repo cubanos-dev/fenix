@@ -74,7 +74,7 @@ This skill covers both creating and implementing designs in pen files. Pen desig
 ## Design Principles
 
 - **Custom design system** — no presets or templates. Design from the project's identity.
-- **Dark mode first** for app surfaces (dashboards, AI chat)
+- **Dark mode first** for app surfaces
 - **Light mode** for public website if appropriate
 - **shadcn/ui patterns** — design components that map cleanly to shadcn primitives
 - **Responsive** — design for desktop first, ensure mobile breakpoints are considered

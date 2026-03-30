@@ -50,7 +50,7 @@ Every route uses a three-layer architecture:
 
 ### Testing
 - **Storybook stories** for every Screen and Component (co-located in `_components/`).
-- **Playwright E2E tests** in `apps/web/e2e/` — use dev auth credentials.
+- **Playwright E2E tests** in `apps/app/e2e/` — use dev auth credentials.
 - Dev auth (email+password) is auto-enabled in development with seeded test user.
 - `bun run validate` runs typecheck + format + lint + Storybook tests.
 - `bun run e2e` runs Playwright E2E tests.
