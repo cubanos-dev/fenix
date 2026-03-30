@@ -12,7 +12,9 @@
     "typecheck": "turbo typecheck",
     "format": "turbo format",
     "format:check": "turbo format:check",
-    "db:migrate": "bun run --cwd apps/web lib/migrator.ts",
+    "validate": "turbo validate",
+    "e2e": "turbo e2e",
+    "db:migrate": "bun run --cwd apps/app lib/migrator.ts",
     "env:pull": "vercel env pull .env.local",
     "prepare": "lefthook install"
   },

@@ -1,0 +1,25 @@
+{
+  "common": {
+    "appName": "Fenix",
+    "signIn": "Iniciar sesion",
+    "signOut": "Cerrar sesion",
+    "loading": "Cargando...",
+    "error": "Algo salio mal",
+    "save": "Guardar",
+    "cancel": "Cancelar",
+    "delete": "Eliminar",
+    "edit": "Editar",
+    "create": "Crear",
+    "search": "Buscar..."
+  },
+  "auth": {
+    "signInTitle": "Bienvenido de vuelta",
+    "signInDescription": "Inicia sesion en tu cuenta para continuar",
+    "signInWithGoogle": "Continuar con Google",
+    "signInWithGithub": "Continuar con GitHub"
+  },
+  "dashboard": {
+    "title": "Panel",
+    "welcome": "Bienvenido, {name}"
+  }
+}

@@ -1,6 +1,6 @@
 import { requireSession } from '@fenix/auth/server'
 
-export default async function AppLayout({ children }: { children: React.ReactNode }) {
+export default async function MainLayout({ children }: { children: React.ReactNode }) {
   const session = await requireSession()
 
   return (

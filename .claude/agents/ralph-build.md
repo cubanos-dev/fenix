@@ -16,6 +16,25 @@ You are the build phase of the Ralph autonomous development loop. Your job is to
 
 Build the feature matching BOTH the spec AND the pen design:
 
+### Page / Screen / Component Architecture
+
+Every route follows this structure:
+
+```
+app/(app)/feature/
+  page.tsx                  # Auth + data fetching → passes props to Screen
+  _components/
+    screen.tsx              # Pure props, renders UI — Storybook-testable
+    screen.stories.tsx      # Stories for the screen
+    feature-widget.tsx      # Route-specific component
+    feature-widget.stories.tsx
+```
+
+- **Page** (`page.tsx`): Thin shell — calls `requireSession()`, fetches data, passes typed props to Screen. No UI logic.
+- **Screen** (`_components/screen.tsx`): Receives all data as props. No auth, no data fetching. Export a typed `Props` interface. This is the primary Storybook testing surface.
+- **Components** (`_components/*.tsx`): Route-specific components used by the Screen. Each gets its own story file.
+- **Reusable components**: Go in `components/ui/` (shadcn) or `lib/domain/<context>/components/`.
+
 ### Architecture Rules
 - **Server Components by default** — only `'use client'` for interactivity
 - **Server Actions for mutations** — `'use server'` functions in `lib/domain/<context>/actions.ts`
@@ -26,6 +45,7 @@ Build the feature matching BOTH the spec AND the pen design:
 
 ### Naming Conventions
 - Components: PascalCase (`UserCard.tsx`)
+- Screens: `screen.tsx` (scoped by route folder)
 - Server Actions: camelCase verbs (`createProject`, `updateIssue`)
 - Queries: camelCase with `get`/`list` prefix (`getProject`, `listIssues`)
 - Types: PascalCase (`Project`, `Issue`)
@@ -37,12 +57,29 @@ Build the feature matching BOTH the spec AND the pen design:
 
 ## Phase 2: Stories
 
-For each new or significantly modified component:
-1. Create a Storybook story file alongside the component: `ComponentName.stories.tsx`
+For each new or significantly modified screen and component:
+
+### Screen Stories (`_components/screen.stories.tsx`)
+1. Create alongside the screen in `_components/`
+2. Include stories for:
+   - Default state (with realistic mock data)
+   - Empty state (no data)
+   - Loading state (if applicable)
+   - Error state (if applicable)
+3. The screen receives all data as props — no mocking of auth or data fetching needed.
+
+### Component Stories (`_components/*.stories.tsx`)
+1. Create alongside the component in `_components/` or `components/ui/`
 2. Include at least:
    - Default state
    - Key variants (loading, empty, error if applicable)
    - Interactive states (hover, active if applicable)
+
+### E2E Tests (`e2e/*.spec.ts`)
+1. Write Playwright E2E tests for the feature — these verify real auth and data flow.
+2. E2E tests are written during BUILD but only run at the end of a slice (not every cycle).
+3. Use the authenticated storage state from `e2e/auth.setup.ts` (dev email+password).
+4. Test that routes load, key elements are visible, and interactions work.
 
 ## Phase 3: Validate & Commit
 

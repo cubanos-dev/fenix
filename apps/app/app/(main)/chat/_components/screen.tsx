@@ -1,18 +1,21 @@
 'use client'
 
-import { useChat } from '@ai-sdk/react'
-import { DefaultChatTransport } from 'ai'
 import { useState } from 'react'
 
-export default function ChatPage() {
-  const { messages, sendMessage, status } = useChat({
-    transport: new DefaultChatTransport({
-      api: '/api/chat',
-    }),
-  })
-  const [input, setInput] = useState('')
+export interface ChatMessage {
+  id: string
+  role: 'user' | 'assistant'
+  parts: Array<{ type: string; text?: string }>
+}
 
-  const isLoading = status === 'streaming' || status === 'submitted'
+export interface ChatScreenProps {
+  messages: ChatMessage[]
+  isLoading: boolean
+  onSendMessage: (text: string) => void
+}
+
+export default function ChatScreen({ messages, isLoading, onSendMessage }: ChatScreenProps) {
+  const [input, setInput] = useState('')
 
   return (
     <div className="mx-auto flex h-[calc(100vh-6rem)] max-w-2xl flex-col">
@@ -36,7 +39,7 @@ export default function ChatPage() {
         onSubmit={(e) => {
           e.preventDefault()
           if (input.trim()) {
-            sendMessage({ text: input })
+            onSendMessage(input)
             setInput('')
           }
         }}

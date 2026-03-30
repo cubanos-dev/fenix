@@ -3,7 +3,8 @@
 ## Stack
 
 - **Monorepo**: Turborepo + Bun workspaces
-- **Web**: Next.js 16 (App Router) + React 19 + TypeScript 6
+- **Web**: Next.js 16 (App Router) + React 19 + TypeScript 6 (public site)
+- **App**: Next.js 16 (App Router) + React 19 + TypeScript 6 (authenticated app)
 - **API**: Python FastAPI (Vercel Services at `/server`)
 - **Auth**: BetterAuth (Google/GitHub OAuth + organization plugin) → `@fenix/auth`
 - **Database**: Kysely + Neon Postgres → `@fenix/db`
@@ -16,12 +17,13 @@
 - **Formatting**: Biome (2-space, single quotes, no semicolons)
 - **Linting**: ESLint 9 (flat config, next core-web-vitals + typescript)
 - **Git hooks**: Lefthook (pre-commit: format + lint + typecheck, pre-push: build + test)
-- **Deployment**: Vercel Services (web → `/`, api → `/server`)
+- **Deployment**: Vercel Services (web → `/`, app → `/` on subdomain, api → `/server`)
 
 ## Workspace Layout
 
 ```
-apps/web     — Next.js 16 main application (@fenix/web)
+apps/web     — Next.js 16 public website + sign-in (@fenix/web) → port 3000
+apps/app     — Next.js 16 authenticated application (@fenix/app) → port 3001
 apps/api     — Python FastAPI service
 packages/db  — Kysely + Neon connection, types, migrator (@fenix/db)
 packages/auth — BetterAuth config, client, server helpers (@fenix/auth)
@@ -40,8 +42,22 @@ packages/config/ — Shared TypeScript, ESLint, Biome configs
 - Use `proxy.ts` (not `middleware.ts`) for route protection. Location: same level as `app/`.
 - Turbopack is the default bundler — no webpack config needed.
 
+### Page / Screen / Component Pattern
+Every route uses a three-layer architecture:
+- **Page** (`page.tsx`): Thin shell — auth + data fetching, passes typed props to Screen.
+- **Screen** (`_components/screen.tsx`): Pure props, renders UI. Primary Storybook testing surface.
+- **Components** (`_components/*.tsx`): Route-specific components with co-located stories.
+- Reusable components go in `components/ui/` or `lib/domain/<context>/components/`.
+
+### Testing
+- **Storybook stories** for every Screen and Component (co-located in `_components/`).
+- **Playwright E2E tests** in `apps/web/e2e/` — use dev auth credentials.
+- Dev auth (email+password) is auto-enabled in development with seeded test user.
+- `bun run validate` runs typecheck + format + lint + Storybook tests.
+- `bun run e2e` runs Playwright E2E tests.
+
 ### DDD (Domain-Driven Design)
-- Domain logic lives in `apps/web/lib/domain/<context>/`.
+- Domain logic lives in `apps/app/lib/domain/<context>/`.
 - Each bounded context gets its own directory.
 - Use `DOMAIN_MODEL.md` to document contexts, aggregates, and events.
 
@@ -94,7 +110,9 @@ bun run typecheck     # Type check all apps
 bun run lint          # Lint all apps
 bun run format        # Format all apps
 bun run format:check  # Check formatting
-bun run test          # Run all tests
+bun run test          # Run all tests (Storybook + Vitest)
+bun run validate      # Typecheck + format + lint + test (all apps)
+bun run e2e           # Run Playwright E2E tests
 bun run db:migrate    # Run database migrations
 bun run env:pull      # Pull env vars from Vercel
 ```

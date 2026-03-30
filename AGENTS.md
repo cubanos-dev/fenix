@@ -5,7 +5,8 @@ Operational guide for AI agents working on this monorepo. All agents must follow
 ## Repository Structure
 
 ```
-apps/web/     — Next.js 16 application (Vercel, route prefix /)
+apps/web/     — Next.js 16 public website + sign-in (Vercel, port 3000)
+apps/app/     — Next.js 16 authenticated application (Vercel, port 3001)
 apps/api/     — Python FastAPI service (Vercel, route prefix /server)
 packages/     — Shared packages (db, auth, email, storage, config)
 docs/         — Project documentation
@@ -58,10 +59,18 @@ Before running Ralph, ensure:
 
 ## Tech Stack Quick Reference
 
-### Web App (apps/web)
+### Public Website (apps/web) — port 3000
 - **Framework**: Next.js 16 + App Router, Bun runtime
+- **Purpose**: Landing pages, marketing, sign-in
+- **UI**: shadcn/ui + Tailwind CSS v4
+- **Auth**: BetterAuth sign-in page + OAuth routes → `@fenix/auth`
+- **i18n**: next-intl (en-US, es-ES)
+
+### Authenticated App (apps/app) — port 3001
+- **Framework**: Next.js 16 + App Router, Bun runtime
+- **Purpose**: Dashboard, AI chat, all protected features
 - **UI**: shadcn/ui + Tailwind CSS v4, dark mode default
-- **Auth**: BetterAuth + Google/GitHub OAuth + orgs → `@fenix/auth`
+- **Auth**: BetterAuth session validation, proxy.ts redirects to web sign-in → `@fenix/auth`
 - **Database**: Kysely + Neon Postgres → `@fenix/db`
 - **AI**: AI SDK v6 + AI Gateway + AI Elements
 - **i18n**: next-intl (en-US, es-ES)
@@ -74,6 +83,25 @@ Before running Ralph, ensure:
 
 ## Key Patterns
 
+### Page / Screen / Component Architecture
+
+Every route follows a three-layer pattern that separates auth+data from rendering:
+
+```
+app/(app)/feature/
+  page.tsx                    # Layer 1: Auth + data fetching → typed props to Screen
+  _components/
+    screen.tsx                # Layer 2: Pure props, renders full UI (Storybook-testable)
+    screen.stories.tsx        # Stories for the screen
+    feature-widget.tsx        # Layer 3: Route-specific component
+    feature-widget.stories.tsx
+```
+
+- **Page** (`page.tsx`): Thin async Server Component. Calls `requireSession()`, fetches data, passes typed props to Screen. No UI logic.
+- **Screen** (`_components/screen.tsx`): Receives all data as typed props. No auth or data fetching. This is the primary Storybook testing surface.
+- **Components** (`_components/*.tsx`): Route-specific components. Each gets co-located stories.
+- **Reusable components**: `components/ui/` (shadcn) or `lib/domain/<context>/components/`.
+
 ### Components
 - All components are Server Components by default
 - Only add `'use client'` when browser APIs or interactivity are needed
@@ -85,9 +113,15 @@ Before running Ralph, ensure:
 - Public paths: `/`, `/sign-in`, `/api/auth`
 - All other routes require a valid BetterAuth session
 
+### Dev Auth (Development Only)
+- Email+password auth is enabled when `NODE_ENV === 'development'`
+- A test user (`dev@fenix.local` / `dev-password-123`) is auto-seeded on dev startup
+- Used by Playwright E2E tests to sign in and test protected routes
+- Never enabled in production — only OAuth providers are available
+
 ### Domain Structure
 ```
-apps/web/lib/domain/
+apps/app/lib/domain/
 ├── <context-name>/
 │   ├── types.ts        — Domain types, aggregates
 │   ├── actions.ts      — Server Actions ('use server')
@@ -95,7 +129,7 @@ apps/web/lib/domain/
 │   └── components/     — Context-specific UI components
 ```
 
-### AI Integration
+### AI Integration (apps/app)
 - Chat endpoint: `app/api/chat/route.ts`
 - Model: AI Gateway string (e.g., `'anthropic/claude-sonnet-4.5'`)
 - Client: `useChat` + `DefaultChatTransport` from `@ai-sdk/react` / `ai`
@@ -113,9 +147,15 @@ apps/web/lib/domain/
 2. **Test**: `turbo test` (all apps)
 
 ### Before Committing (Ralph agents)
-- Run `bun run validate` (typecheck + lint + test)
+- Run `bun run validate` (typecheck + format check + lint + test)
 - Commit format: `feat(<context>): description [spec:<spec-file>]`
 - Other prefixes: `fix`, `chore`, `pen` (design-only changes)
+
+### Testing Strategy
+- **Storybook + Vitest** (every BUILD→REVIEW cycle): Every Screen and Component gets stories. Vitest runs them as tests. This is the primary verification — no auth needed because Screens are pure props.
+- **Playwright E2E** (end of slice): Written during BUILD, run at slice end. Uses dev email+password auth to sign in and verify real routes, auth redirects, and data flow.
+- **`bun run validate`**: typecheck + format check + lint + Storybook/Vitest tests
+- **`bun run e2e`**: Playwright E2E tests (requires dev server or uses webServer config)
 
 ## Guardrails
 

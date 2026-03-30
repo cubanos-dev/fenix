@@ -21,6 +21,13 @@
     "format": {
       "cache": false
     },
-    "format:check": {}
+    "format:check": {},
+    "validate": {
+      "dependsOn": ["^build"]
+    },
+    "e2e": {
+      "dependsOn": ["build"],
+      "cache": false
+    }
   }
 }

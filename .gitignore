@@ -49,6 +49,9 @@ __pycache__/
 
 # testing
 coverage/
+e2e/.auth/
+playwright-report/
+test-results/
 
 # ralph loop state
 .review_verdict

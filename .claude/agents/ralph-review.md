@@ -21,10 +21,18 @@ For each affected screen/feature:
 
 Run `bun run validate` and capture the output:
 - TypeScript type errors
+- Biome format violations
 - ESLint violations
-- Test failures
+- Test failures (Storybook + Vitest)
 
 If automated checks fail, this is an automatic NEEDS WORK verdict.
+
+### Phase 2.5: Visual Verification (Storybook)
+
+For each affected screen/component that has stories:
+1. Verify stories exist in `_components/*.stories.tsx` for all new/modified screens and components
+2. Verify stories cover key states: default, empty, loading, error
+3. If this is the **last task in a slice**, also run `bun run e2e` (Playwright E2E tests) — these verify auth flow, route protection, and real data rendering via dev credentials
 
 ## Phase 3: Review Against Specs and Designs
 
@@ -61,9 +69,13 @@ Evaluate each area with specific findings (file paths and line numbers):
 - Error handling is appropriate?
 
 ### 3f. Testing
-- Storybook stories exist for new/modified components?
-- Stories cover key variants?
-- Tests pass?
+- Every screen has a story in `_components/screen.stories.tsx`?
+- Every route-specific component has a co-located story?
+- Stories cover key states (default, empty, loading, error)?
+- Screen stories use typed props (no auth/data mocking needed)?
+- Page is a thin shell (auth + data fetch only, delegates to Screen)?
+- E2E test exists for the feature (written during BUILD, run at slice end)?
+- All tests pass?
 
 ## Phase 4: Write Review Verdicts
 

@@ -17,9 +17,5 @@
     "signInDescription": "Sign in to your account to continue",
     "signInWithGoogle": "Continue with Google",
     "signInWithGithub": "Continue with GitHub"
-  },
-  "dashboard": {
-    "title": "Dashboard",
-    "welcome": "Welcome, {name}"
   }
 }
