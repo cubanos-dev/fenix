@@ -1,10 +1,17 @@
 import { defineConfig } from 'vitest/config'
 import { storybookTest } from '@storybook/addon-vitest/vitest-plugin'
 import { playwright } from '@vitest/browser-playwright'
+import tailwindcss from '@tailwindcss/vite'
 import path from 'node:path'
 
 export default defineConfig({
-  plugins: [storybookTest({ configDir: path.join(__dirname, '.storybook') })],
+  plugins: [
+    tailwindcss(),
+    storybookTest({ configDir: path.join(__dirname, '.storybook') }),
+  ],
+  resolve: {
+    dedupe: ['@storybook/react', '@storybook/addon-vitest'],
+  },
   test: {
     name: 'storybook',
     browser: {
@@ -13,6 +20,5 @@ export default defineConfig({
       provider: playwright(),
       instances: [{ browser: 'chromium' }],
     },
-    setupFiles: ['.storybook/vitest.setup.ts'],
   },
 })
