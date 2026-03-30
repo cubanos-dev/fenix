@@ -9,7 +9,6 @@
 - **Auth**: BetterAuth (Google/GitHub OAuth + organization plugin) → `@fenix/auth`
 - **Database**: Kysely + Neon Postgres → `@fenix/db`
 - **UI**: shadcn/ui + Tailwind CSS v4 + Geist fonts
-- **AI**: AI SDK v6 + AI Gateway (OIDC auth, no API keys) + AI Elements
 - **Email**: Resend + React Email → `@fenix/email`
 - **Storage**: Cloudflare R2 via S3 SDK → `@fenix/storage`
 - **i18n**: next-intl (en-US, es-ES)
@@ -60,15 +59,6 @@ Every route uses a three-layer architecture:
 - Domain logic lives in `apps/app/lib/domain/<context>/`.
 - Each bounded context gets its own directory.
 - Use `DOMAIN_MODEL.md` to document contexts, aggregates, and events.
-
-### AI SDK v6
-- Default to AI Gateway: `model: 'provider/model-name'` (e.g., `'anthropic/claude-sonnet-4.5'`).
-- Use dots for version numbers in model slugs (not hyphens).
-- Server: `convertToModelMessages()` + `streamText()` + `toUIMessageStreamResponse()`.
-- Client: `useChat({ transport: new DefaultChatTransport({ api: '/api/chat' }) })`.
-- Render AI text with `<MessageResponse>` from AI Elements — never raw `{text}`.
-- Use `inputSchema` (not `parameters`) and `outputSchema` (not `result`) for tool definitions.
-- `maxSteps` is removed — use `stopWhen: stepCountIs(N)`.
 
 ### Code Quality
 - Run `bun run validate` before committing (typecheck + lint + test).

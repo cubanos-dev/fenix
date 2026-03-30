@@ -71,7 +71,6 @@ apps/app/lib/domain/
 - **Dark mode by default** for dashboards and AI surfaces
 - **Geist Sans** for UI text, **Geist Mono** for code/metrics
 - Use `cn()` from `@/lib/utils` for class merging
-- AI text rendering: use `<MessageResponse>` from AI Elements (never raw strings)
 
 ## Import Conventions
 
@@ -93,15 +92,6 @@ apps/app/lib/domain/
 - `apps/web` public paths: `/`, `/sign-in`, `/api/auth`
 - `apps/app` public paths: `/api/auth` only — everything else requires session
 - Unauthenticated app users redirect to web's sign-in page
-
-## AI SDK v6
-
-- Default to AI Gateway: `model: 'provider/model-name'`
-- Use dots for version numbers in model slugs
-- Server: `convertToModelMessages()` + `streamText()` + `toUIMessageStreamResponse()`
-- Client: `useChat({ transport: new DefaultChatTransport({ api: '/api/chat' }) })`
-- Render AI text with `<MessageResponse>` from AI Elements
-- Use `inputSchema` (not `parameters`) and `outputSchema` (not `result`) for tool definitions
 
 ## i18n
 

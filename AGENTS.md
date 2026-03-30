@@ -73,11 +73,10 @@ Skills in `skills/` are injected into GSD agents per `.planning/config.json`:
 
 ### Authenticated App (apps/app) — port 3001
 - **Framework**: Next.js 16 + App Router, Bun runtime
-- **Purpose**: Dashboard, AI chat, all protected features
+- **Purpose**: Dashboard, all protected features
 - **UI**: shadcn/ui + Tailwind CSS v4, dark mode default
 - **Auth**: BetterAuth session validation, proxy.ts redirects to web sign-in → `@fenix/auth`
 - **Database**: Kysely + Neon Postgres → `@fenix/db`
-- **AI**: AI SDK v6 + AI Gateway + AI Elements
 - **i18n**: next-intl (en-US, es-ES)
 - **Storage**: Cloudflare R2 → `@fenix/storage`
 - **Email**: Resend + React Email → `@fenix/email`
@@ -134,12 +133,6 @@ apps/app/lib/domain/
 │   ├── queries.ts      — Data fetching functions
 │   └── components/     — Context-specific UI components
 ```
-
-### AI Integration (apps/app)
-- Chat endpoint: `app/api/chat/route.ts`
-- Model: AI Gateway string (e.g., `'anthropic/claude-sonnet-4.5'`)
-- Client: `useChat` + `DefaultChatTransport` from `@ai-sdk/react` / `ai`
-- Render AI text: `<MessageResponse>` from AI Elements (never raw strings)
 
 ## Quality Gates
 

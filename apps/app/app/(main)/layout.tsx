@@ -14,9 +14,6 @@ export default async function MainLayout({ children }: { children: React.ReactNo
             <a href="/dashboard" className="rounded-md px-3 py-2 text-sm hover:bg-sidebar-accent">
               Dashboard
             </a>
-            <a href="/chat" className="rounded-md px-3 py-2 text-sm hover:bg-sidebar-accent">
-              AI Chat
-            </a>
           </nav>
           <div className="mt-auto pt-4 text-xs text-muted-foreground">{session.user.name}</div>
         </div>
