@@ -1,0 +1,38 @@
+{
+  "mode": "interactive",
+  "granularity": "standard",
+  "workflow": {
+    "research": true,
+    "plan_check": true,
+    "verifier": true,
+    "nyquist_validation": true,
+    "discuss_mode": "discuss"
+  },
+  "planning": {
+    "commit_docs": true
+  },
+  "parallelization": {
+    "enabled": true,
+    "plan_level": true,
+    "max_concurrent_agents": 3
+  },
+  "gates": {
+    "confirm_project": true,
+    "confirm_phases": true,
+    "confirm_roadmap": true,
+    "confirm_plan": true
+  },
+  "safety": {
+    "always_confirm_destructive": true,
+    "always_confirm_external_services": true
+  },
+  "agent_skills": {
+    "gsd-executor": ["skills/fenix-architecture", "skills/fenix-testing", "skills/fenix-design", "skills/frontend-design"],
+    "gsd-planner": ["skills/fenix-architecture", "skills/fenix-design", "skills/frontend-design"],
+    "gsd-verifier": ["skills/fenix-testing", "skills/fenix-design"],
+    "gsd-plan-checker": ["skills/fenix-testing"],
+    "gsd-ui-researcher": ["skills/fenix-design", "skills/frontend-design"],
+    "gsd-ui-checker": ["skills/fenix-design"],
+    "gsd-ui-auditor": ["skills/fenix-design"]
+  }
+}
