@@ -1,0 +1,3 @@
+# Linguist overrides — exclude vendored/generated files from language stats
+.claude/**          linguist-vendored
+bun.lock            linguist-generated
