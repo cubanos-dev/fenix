@@ -137,4 +137,32 @@ describe('renameProject', () => {
     expect(content).not.toContain('@fenix/')
     expect(content).not.toContain('fenix')
   })
+
+  test('renames directories named fenix to the new project name', async () => {
+    writeFixture('apps/app/components/ui/fenix/button.tsx', 'export const Button = () => null\n')
+    writeFixture('apps/app/components/ui/fenix/README.md', '# fenix overrides\n')
+    const map = buildRenameMap('thera-desk', 'thera-desk')
+    const report = await renameProject({ cwd: workdir, rename: map })
+    expect(report.directoriesRenamed.length).toBe(1)
+    expect(report.directoriesRenamed[0]?.from).toBe('apps/app/components/ui/fenix')
+    expect(report.directoriesRenamed[0]?.to).toBe('apps/app/components/ui/thera-desk')
+    expect(readFixture('apps/app/components/ui/thera-desk/button.tsx')).toContain('Button')
+    expect(readFixture('apps/app/components/ui/thera-desk/README.md')).toContain('thera-desk overrides')
+  })
+
+  test('nested fenix directories rename bottom-up', async () => {
+    writeFixture('outer/fenix/inner/fenix/file.ts', "import '@fenix/ui'\n")
+    const map = buildRenameMap('new-app', 'new-app')
+    const report = await renameProject({ cwd: workdir, rename: map })
+    expect(report.directoriesRenamed.length).toBe(2)
+    expect(readFixture('outer/new-app/inner/new-app/file.ts')).toContain('@new-app/ui')
+  })
+
+  test('dry run does not rename directories on disk', async () => {
+    writeFixture('apps/app/components/ui/fenix/button.tsx', 'export const x = 1\n')
+    const map = buildRenameMap('my-app', 'my-app')
+    const report = await renameProject({ cwd: workdir, rename: map, dryRun: true })
+    expect(report.directoriesRenamed.length).toBe(1)
+    expect(readFixture('apps/app/components/ui/fenix/button.tsx')).toBe('export const x = 1\n')
+  })
 })

@@ -1,5 +1,5 @@
-import { readdir, readFile, stat, writeFile } from 'node:fs/promises'
-import { join, relative, sep } from 'node:path'
+import { readdir, readFile, rename as fsRename, stat, writeFile } from 'node:fs/promises'
+import { dirname, join, relative, sep } from 'node:path'
 
 export type RenameMap = Record<string, string>
 
@@ -13,6 +13,7 @@ export interface RenameReport {
   filesTouched: number
   replacements: number
   plan: Array<{ path: string; replacements: number }>
+  directoriesRenamed: Array<{ from: string; to: string }>
 }
 
 const INCLUDE_FILENAMES = new Set([
@@ -107,6 +108,22 @@ async function walk(dir: string, root: string, acc: string[]): Promise<void> {
   }
 }
 
+async function collectDirsNamedFenix(root: string): Promise<string[]> {
+  const matches: string[] = []
+  async function recurse(dir: string): Promise<void> {
+    const entries = await readdir(dir, { withFileTypes: true })
+    for (const entry of entries) {
+      if (!entry.isDirectory()) continue
+      if (EXCLUDE_DIRS.has(entry.name)) continue
+      const full = join(dir, entry.name)
+      await recurse(full)
+      if (entry.name === 'fenix') matches.push(full)
+    }
+  }
+  await recurse(root)
+  return matches
+}
+
 export async function renameProject(options: RenameOptions): Promise<RenameReport> {
   const { cwd, rename, dryRun = false } = options
   const files: string[] = []
@@ -129,7 +146,23 @@ export async function renameProject(options: RenameOptions): Promise<RenameRepor
     await writeFile(file, next, { encoding: 'utf8', mode: info.mode })
   }
 
-  return { filesTouched, replacements, plan }
+  // Rename directories named literally 'fenix' to the new lowercased project name.
+  // Walk was post-order (deepest first) so child paths stay valid until we rename the parent.
+  const directoriesRenamed: RenameReport['directoriesRenamed'] = []
+  const newDirName = rename.fenix
+  if (newDirName && newDirName !== 'fenix') {
+    const dirs = await collectDirsNamedFenix(cwd)
+    for (const dir of dirs) {
+      const target = join(dirname(dir), newDirName)
+      const relFrom = relative(cwd, dir).split(sep).join('/')
+      const relTo = relative(cwd, target).split(sep).join('/')
+      directoriesRenamed.push({ from: relFrom, to: relTo })
+      if (dryRun) continue
+      await fsRename(dir, target)
+    }
+  }
+
+  return { filesTouched, replacements, plan, directoriesRenamed }
 }
 
 export function buildRenameMap(projectName: string, scope: string): RenameMap {
