@@ -60,10 +60,7 @@ describe('buildRenameMap', () => {
 
 describe('renameProject', () => {
   test('rewrites package.json name and description', async () => {
-    writeFixture(
-      'package.json',
-      JSON.stringify({ name: 'fenix', description: 'Fenix template' }, null, 2),
-    )
+    writeFixture('package.json', JSON.stringify({ name: 'fenix', description: 'Fenix template' }, null, 2))
     const map = buildRenameMap('thera-desk', 'thera-desk')
     const report = await renameProject({ cwd: workdir, rename: map })
     expect(report.filesTouched).toBe(1)
@@ -76,10 +73,7 @@ describe('renameProject', () => {
   })
 
   test('rewrites @fenix/ imports in .ts files', async () => {
-    writeFixture(
-      'apps/app/index.ts',
-      "import { auth } from '@fenix/auth'\nimport { db } from '@fenix/db'\n",
-    )
+    writeFixture('apps/app/index.ts', "import { auth } from '@fenix/auth'\nimport { db } from '@fenix/db'\n")
     const map = buildRenameMap('my-app', 'my-app')
     await renameProject({ cwd: workdir, rename: map })
     const src = readFixture('apps/app/index.ts')
@@ -89,10 +83,7 @@ describe('renameProject', () => {
   })
 
   test('case-preserving replacement (fenix/Fenix/FENIX)', async () => {
-    writeFixture(
-      'README.md',
-      '# Fenix\nwelcome to fenix. Env var FENIX_URL matters.\n',
-    )
+    writeFixture('README.md', '# Fenix\nwelcome to fenix. Env var FENIX_URL matters.\n')
     const map = buildRenameMap('thera-desk', 'thera-desk')
     await renameProject({ cwd: workdir, rename: map })
     const content = readFixture('README.md')
@@ -137,10 +128,7 @@ describe('renameProject', () => {
   })
 
   test('longer keys beat shorter ones (@fenix/ not split by fenix)', async () => {
-    writeFixture(
-      'apps/app/foo.ts',
-      "import x from '@fenix/ui'\nconst msg = 'fenix is cool'\n",
-    )
+    writeFixture('apps/app/foo.ts', "import x from '@fenix/ui'\nconst msg = 'fenix is cool'\n")
     const map = buildRenameMap('new-name', 'new-name')
     await renameProject({ cwd: workdir, rename: map })
     const content = readFixture('apps/app/foo.ts')

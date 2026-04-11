@@ -1,22 +1,9 @@
 #!/usr/bin/env bun
 import { spawnSync } from 'node:child_process'
-import {
-  cpSync,
-  existsSync,
-  mkdirSync,
-  mkdtempSync,
-  readFileSync,
-  rmSync,
-  writeFileSync,
-} from 'node:fs'
+import { cpSync, existsSync, mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { basename, join, resolve } from 'node:path'
-import {
-  buildRenameMap,
-  isValidKebabCase,
-  renameProject,
-  type RenameMap,
-} from './lib/rename.ts'
+import { buildRenameMap, isValidKebabCase, renameProject, type RenameMap } from './lib/rename.ts'
 
 const MARKER = '.fenix-initialized'
 
@@ -231,11 +218,7 @@ function removePythonApi(cwd: string): void {
   }
 }
 
-function setupPen(
-  cwd: string,
-  mode: 'file' | 'repo' | 'sibling' | 'none',
-  value: string | undefined,
-): void {
+function setupPen(cwd: string, mode: 'file' | 'repo' | 'sibling' | 'none', value: string | undefined): void {
   const pensDir = join(cwd, 'pens')
   mkdirSync(pensDir, { recursive: true })
   switch (mode) {
@@ -277,9 +260,7 @@ function setupPen(
   }
 }
 
-async function resolveAnswers(
-  args: CliArgs,
-): Promise<{
+async function resolveAnswers(args: CliArgs): Promise<{
   name: string
   description: string
   org: string
@@ -304,8 +285,7 @@ async function resolveAnswers(
       ? await promptInput('Description:', 'A new project scaffolded from fenix')
       : 'A new project scaffolded from fenix')
 
-  const org =
-    args.org ?? (interactive ? await promptInput('GitHub org:', 'cubanos-dev') : 'cubanos-dev')
+  const org = args.org ?? (interactive ? await promptInput('GitHub org:', 'cubanos-dev') : 'cubanos-dev')
 
   const scope = args.scope ?? (interactive ? await promptInput('Package scope:', name) : name)
 
@@ -341,20 +321,14 @@ async function resolveAnswers(
   }
 
   const python: 'yes' | 'no' =
-    args.python ??
-    (interactive ? ((await promptYesNo('Include Python API service?', false)) ? 'yes' : 'no') : 'no')
+    args.python ?? (interactive ? ((await promptYesNo('Include Python API service?', false)) ? 'yes' : 'no') : 'no')
 
   const github: 'yes' | 'no' =
-    args.github ??
-    (interactive ? ((await promptYesNo('Create a GitHub repo now?', true)) ? 'yes' : 'no') : 'no')
+    args.github ?? (interactive ? ((await promptYesNo('Create a GitHub repo now?', true)) ? 'yes' : 'no') : 'no')
 
   const resetGit: 'yes' | 'no' =
     args.resetGit ??
-    (interactive
-      ? (await promptYesNo('Reset git history for a clean initial commit?', true))
-        ? 'yes'
-        : 'no'
-      : 'no')
+    (interactive ? ((await promptYesNo('Reset git history for a clean initial commit?', true)) ? 'yes' : 'no') : 'no')
 
   return { name, description, org, scope, pen, penValue, python, github, resetGit }
 }
@@ -415,11 +389,7 @@ async function runInit(cwd: string, args: CliArgs): Promise<void> {
     if (existsSync(join(cwd, '.git'))) rmSync(join(cwd, '.git'), { recursive: true, force: true })
     runCommand('git', ['init', '-q'], cwd)
     runCommand('git', ['add', '-A'], cwd)
-    runCommand(
-      'git',
-      ['commit', '-q', '-m', 'chore: initial commit from fenix template'],
-      cwd,
-    )
+    runCommand('git', ['commit', '-q', '-m', 'chore: initial commit from fenix template'], cwd)
   }
 
   if (answers.github === 'yes') {
@@ -450,10 +420,7 @@ async function runInit(cwd: string, args: CliArgs): Promise<void> {
     runCommand('bun', ['run', 'validate'], cwd)
   }
 
-  writeFileSync(
-    join(cwd, MARKER),
-    `${new Date().toISOString()}\nname=${answers.name}\nscope=${answers.scope}\n`,
-  )
+  writeFileSync(join(cwd, MARKER), `${new Date().toISOString()}\nname=${answers.name}\nscope=${answers.scope}\n`)
 
   log('')
   log(`Project ready at ${cwd}`)
@@ -483,11 +450,7 @@ async function runSmokeTest(sourceRoot: string): Promise<void> {
     '--exclude=coverage',
     '--exclude=storybook-static',
   ]
-  const rsync = runCommandCapture(
-    'rsync',
-    ['-a', ...exclude, `${sourceRoot}/`, `${target}/`],
-    sourceRoot,
-  )
+  const rsync = runCommandCapture('rsync', ['-a', ...exclude, `${sourceRoot}/`, `${target}/`], sourceRoot)
   if (rsync.status !== 0) throw new Error(`rsync failed: ${rsync.stderr}`)
 
   const smokeArgs: CliArgs = {

@@ -116,4 +116,54 @@ bun run validate      # Typecheck + format + lint + test (all apps)
 bun run e2e           # Run Playwright E2E tests
 bun run db:migrate    # Run database migrations
 bun run env:pull      # Pull env vars from Vercel
+bun run phase:gate    # Run all phase gates for a named phase
+bun run coverage:audit # Assert a phase shipped its test artifacts
+bun run pattern:audit  # Reuse-before-reinvent symbol lookup
+bun run pen:extract    # Extract pen inventory (agent runs the MCP calls)
+bun run pen:drift      # Flag stories whose @pen target changed
+bun run pen:tokens     # Emit CSS custom properties from pen variables
+bun run visual:diff    # Compare stories to their @pen references
 ```
+
+## Phase Flow
+
+Work in this repo is organised into phases. A phase is a bounded slice of scope — a set of screens, routes, and domain functions that ship together. The flow is deliberately strict: every phase moves through the same twelve steps, and each step leaves a machine-checkable artifact behind. Prose is not evidence.
+
+**Intake → plan → pattern audit.** `/phase-start <id>` copies the phase template into `.planning/phases/<id>/`, reads the pen inventory for every frame in scope, and quotes pen notes verbatim into `PLAN.md`. Before any code is authored, `bun run pattern:audit --symbol <name>` runs for every symbol the plan introduces; the findings are cited in the plan so reuse is visible. No production edits happen during intake.
+
+**Spec → test contracts.** `/phase-spec <id>` scaffolds Storybook stories (one per screen state), unit test `.todo`s (one per pure function), and Playwright `.skip` E2Es (one per new route). Stories that reference a pen export carry a `@pen <path>` JSDoc tag — later gates parse it. The stories are the spec; implementation catches up to them, not the other way around.
+
+**Implement → simplify.** Fill components so stories render, fns pass tests, and E2Es flip from `.skip` to passing. Run the `simplify` skill against the diff to remove duplication and dead code. This is a required pass, not a nice-to-have.
+
+**Close.** `/phase-close <id>` runs `bun run phase:gate --phase <id>`, which chains the pattern audit (informational), the coverage audit (hard — no uncovered screen/route/fn), and `bun run validate` (hard — typecheck, format, lint, unit/Storybook tests). If the gate is green, the `phase-reviewer` subagent runs in a fresh context against the diff, the plan, and the Definition of Done. If the reviewer votes done, `agent-browser-verify` walks the golden path in a real browser. Only when every hard gate is green does the phase commit with `feat(<phase-id>):` and a `COMPLETION.md` carrying the evidence.
+
+## Definition of Done
+
+A phase is done only when every item below is backed by a machine-checkable artifact:
+
+- Every new screen has a Storybook story covering every state listed in the plan's state enumeration.
+- Every new pure function has a co-located unit test that actually imports the function.
+- Every new route has a Playwright E2E spec exercising the golden path.
+- The pattern audit ran for every new symbol; findings are cited in `PLAN.md` → Pattern audit findings.
+- The simplify pass ran against the diff.
+- `bun run coverage:audit --phase <id>` exits 0.
+- `bun run phase:gate --phase <id>` exits 0.
+- `phase-reviewer` voted `done` in a fresh context.
+- `agent-browser-verify` exercised the golden path with no console errors.
+- `bun run pen:drift` is clean, or each flagged story is documented as an accepted deviation.
+- `bun run visual:diff --all` pairs were reviewed; accepted deviations are recorded.
+- `COMPLETION.md` is written with the coverage JSON, the reviewer JSON, browser screenshots, and the closing diff stats.
+
+Nothing here is optional. The gates exist because phases shipped "done" while features were broken — the point of the checklist is to make the failure mode impossible, not to document a recommendation.
+
+## Pen Workflow
+
+Pens are **input** and **reference**, never output. The agent does not author pens mid-phase. Pens drive the spec; the agent translates them into stories and code.
+
+**Extraction is one-time per pen update.** `bun run pen:extract` prepares `pens/inventory/` and prints the MCP instructions the agent follows: open the document, walk top-level frames, export each screen as PNG, copy sibling note blocks verbatim. The script is a thin wrapper — real work happens through Pencil MCP tools.
+
+**Notes are quoted verbatim.** When a phase plan references a frame, it copies the note into `PLAN.md` → "Verbatim pen notes" exactly as it appears, typos and punctuation included. No paraphrasing, no summarising, no "cleaning up." Every lossy translation of a note is a chance for the story to drift from the design intent, which was the largest source of rework in prior projects.
+
+**Stories cite pens by path.** Storybook stories whose behaviour comes from a pen export add a `@pen pens/exports/<section>/<screen>.png` JSDoc tag. `bun run pen:drift` greps for the tag and flags any story whose target PNG changed; `bun run visual:diff --all` collects every pair for the visual regression step. The `@pen` tag is the link between the spec and the rendered UI, and both gates depend on it.
+
+**Tokens are user-defined.** `bun run pen:tokens` emits CSS custom properties from pen variables. Users define variables in Pencil once, per project — the script never guesses colours from raw hex, because guesses produce unstable tokens.

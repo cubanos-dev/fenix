@@ -29,14 +29,7 @@ const INCLUDE_FILENAMES = new Set([
   '.env.local.example',
 ])
 
-const INCLUDE_EXTENSIONS = new Set([
-  '.ts',
-  '.tsx',
-  '.md',
-  '.json',
-  '.yml',
-  '.yaml',
-])
+const INCLUDE_EXTENSIONS = new Set(['.ts', '.tsx', '.md', '.json', '.yml', '.yaml'])
 
 // Directories we never descend into.
 const EXCLUDE_DIRS = new Set([
@@ -54,13 +47,7 @@ const EXCLUDE_DIRS = new Set([
 ])
 
 // Files whose contents must never be rewritten (self-referential or binary lockfiles).
-const EXCLUDE_FILES = new Set([
-  'bun.lockb',
-  'bun.lock',
-  'package-lock.json',
-  'yarn.lock',
-  'pnpm-lock.yaml',
-])
+const EXCLUDE_FILES = new Set(['bun.lockb', 'bun.lock', 'package-lock.json', 'yarn.lock', 'pnpm-lock.yaml'])
 
 // Path suffix (POSIX) of the rename utility itself — excluded so the rename map here
 // is never rewritten when running the scaffolder from inside fenix.

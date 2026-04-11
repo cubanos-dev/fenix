@@ -20,7 +20,14 @@
     "init": "bun run scripts/init-project.ts",
     "init:dry": "bun run scripts/init-project.ts --dry",
     "init:smoke": "bun run scripts/init-project.ts --smoke",
-    "test:scripts": "bun test scripts"
+    "test:scripts": "bun test scripts",
+    "coverage:audit": "bun run scripts/coverage-audit.ts",
+    "pattern:audit": "bun run scripts/pattern-audit.ts",
+    "pen:extract": "bun run scripts/pen-extract.ts",
+    "pen:drift": "bun run scripts/pen-drift-check.ts",
+    "pen:tokens": "bun run scripts/pen-tokens.ts",
+    "visual:diff": "bun run scripts/visual-diff.ts",
+    "phase:gate": "bun run scripts/phase-gate.ts"
   },
   "devDependencies": {
     "lefthook": "^2.1.4",
