@@ -20,8 +20,10 @@
       "dependencies": {
         "@fenix/auth": "workspace:*",
         "@fenix/db": "workspace:*",
+        "@fenix/domain": "workspace:*",
         "@fenix/email": "workspace:*",
         "@fenix/storage": "workspace:*",
+        "@fenix/ui": "workspace:*",
         "@radix-ui/react-slot": "^1.2.4",
         "@radix-ui/react-use-controllable-state": "^1.2.2",
         "better-auth": "^1.5.6",
@@ -75,8 +77,10 @@
       "dependencies": {
         "@fenix/auth": "workspace:*",
         "@fenix/db": "workspace:*",
+        "@fenix/domain": "workspace:*",
         "@fenix/email": "workspace:*",
         "@fenix/storage": "workspace:*",
+        "@fenix/ui": "workspace:*",
         "@radix-ui/react-slot": "^1.2.4",
         "@radix-ui/react-use-controllable-state": "^1.2.2",
         "@rive-app/react-webgl2": "^4.27.3",
@@ -170,6 +174,19 @@
         "typescript": "^6.0.0",
       },
     },
+    "packages/domain": {
+      "name": "@fenix/domain",
+      "version": "0.0.0",
+      "devDependencies": {
+        "@biomejs/biome": "^2.4.0",
+        "@fenix/biome-config": "workspace:*",
+        "@fenix/eslint-config": "workspace:*",
+        "@fenix/typescript-config": "workspace:*",
+        "eslint": "^9.39.0",
+        "eslint-config-next": "^16.2.0",
+        "typescript": "^6.0.0",
+      },
+    },
     "packages/email": {
       "name": "@fenix/email",
       "version": "0.0.0",
@@ -192,6 +209,34 @@
       },
       "devDependencies": {
         "typescript": "^6.0.0",
+      },
+    },
+    "packages/ui": {
+      "name": "@fenix/ui",
+      "version": "0.0.0",
+      "dependencies": {
+        "@radix-ui/react-dialog": "^1.1.15",
+        "class-variance-authority": "^0.7.1",
+        "clsx": "^2.1.1",
+        "sonner": "^2.0.7",
+        "tailwind-merge": "^3.4.0",
+      },
+      "devDependencies": {
+        "@biomejs/biome": "^2.4.0",
+        "@fenix/biome-config": "workspace:*",
+        "@fenix/eslint-config": "workspace:*",
+        "@fenix/typescript-config": "workspace:*",
+        "@types/react": "^19.0.0",
+        "@types/react-dom": "^19.0.0",
+        "eslint": "^9.39.0",
+        "eslint-config-next": "^16.2.0",
+        "react": "^19.2.0",
+        "react-dom": "^19.2.0",
+        "typescript": "^6.0.0",
+      },
+      "peerDependencies": {
+        "react": "^19.0.0",
+        "react-dom": "^19.0.0",
       },
     },
   },
@@ -442,6 +487,8 @@
 
     "@fenix/db": ["@fenix/db@workspace:packages/db"],
 
+    "@fenix/domain": ["@fenix/domain@workspace:packages/domain"],
+
     "@fenix/email": ["@fenix/email@workspace:packages/email"],
 
     "@fenix/eslint-config": ["@fenix/eslint-config@workspace:packages/config/eslint"],
@@ -449,6 +496,8 @@
     "@fenix/storage": ["@fenix/storage@workspace:packages/storage"],
 
     "@fenix/typescript-config": ["@fenix/typescript-config@workspace:packages/config/typescript"],
+
+    "@fenix/ui": ["@fenix/ui@workspace:packages/ui"],
 
     "@fenix/web": ["@fenix/web@workspace:apps/web"],
 

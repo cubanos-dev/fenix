@@ -21,8 +21,10 @@
   "dependencies": {
     "@fenix/auth": "workspace:*",
     "@fenix/db": "workspace:*",
+    "@fenix/domain": "workspace:*",
     "@fenix/email": "workspace:*",
     "@fenix/storage": "workspace:*",
+    "@fenix/ui": "workspace:*",
     "@radix-ui/react-slot": "^1.2.4",
     "@radix-ui/react-use-controllable-state": "^1.2.2",
     "@rive-app/react-webgl2": "^4.27.3",

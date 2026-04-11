@@ -1,0 +1,26 @@
+{
+  "name": "@fenix/domain",
+  "private": true,
+  "version": "0.0.0",
+  "type": "module",
+  "exports": {
+    ".": "./src/index.ts",
+    "./user": "./src/user/index.ts"
+  },
+  "scripts": {
+    "lint": "eslint .",
+    "typecheck": "tsc --noEmit",
+    "format": "biome format --write .",
+    "format:check": "biome format .",
+    "validate": "tsc --noEmit && biome format . && eslint ."
+  },
+  "devDependencies": {
+    "@biomejs/biome": "^2.4.0",
+    "@fenix/biome-config": "workspace:*",
+    "@fenix/eslint-config": "workspace:*",
+    "@fenix/typescript-config": "workspace:*",
+    "eslint": "^9.39.0",
+    "eslint-config-next": "^16.2.0",
+    "typescript": "^6.0.0"
+  }
+}
