@@ -16,7 +16,11 @@
     "e2e": "turbo e2e",
     "db:migrate": "bun run --cwd apps/app lib/migrator.ts",
     "env:pull": "vercel env pull .env.local",
-    "prepare": "lefthook install"
+    "prepare": "lefthook install",
+    "init": "bun run scripts/init-project.ts",
+    "init:dry": "bun run scripts/init-project.ts --dry",
+    "init:smoke": "bun run scripts/init-project.ts --smoke",
+    "test:scripts": "bun test scripts"
   },
   "devDependencies": {
     "lefthook": "^2.1.4",

@@ -1,5 +1,17 @@
 # Fenix
 
+## Start a new project
+
+```bash
+bun create cubanos-dev/fenix my-project
+cd my-project
+bun run init
+```
+
+The interactive scaffolder renames the template, sets up your pen file, optionally creates a GitHub repo, and runs the first validate pass. See `scripts/init-project.ts` for the flags used by non-interactive runs and the `bun run init:smoke` end-to-end check.
+
+---
+
 An autonomous-first monorepo template for building production-ready web applications with Claude Code. Fenix combines GSD (Get Shit Done) orchestration, Pencil MCP design tools, and custom agent skills to enable fully autonomous development — from requirements to deployed code.
 
 ## What This Is
