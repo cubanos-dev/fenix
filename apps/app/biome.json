@@ -11,7 +11,11 @@
       "hooks/**/*.tsx",
       "lib/**/*.ts",
       "lib/**/*.tsx",
-      "i18n/**/*.ts"
+      "i18n/**/*.ts",
+      "!**/next-env.d.ts",
+      "!**/.next/**",
+      "!**/.turbo/**",
+      "!**/vitest.config.ts"
     ]
   }
 }

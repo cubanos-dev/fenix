@@ -12,7 +12,11 @@
       "lib/**/*.ts",
       "lib/**/*.tsx",
       "i18n/**/*.ts",
-      "emails/**/*.tsx"
+      "emails/**/*.tsx",
+      "!**/next-env.d.ts",
+      "!**/.next/**",
+      "!**/.turbo/**",
+      "!**/vitest.config.ts"
     ]
   }
 }

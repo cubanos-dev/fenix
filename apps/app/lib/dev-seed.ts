@@ -9,9 +9,11 @@ const DEV_USER = {
 export async function seedDevUser() {
   if (process.env.NODE_ENV !== 'development') return
 
-  const existing = await auth.api.signInEmail({
-    body: { email: DEV_USER.email, password: DEV_USER.password },
-  }).catch(() => null)
+  const existing = await auth.api
+    .signInEmail({
+      body: { email: DEV_USER.email, password: DEV_USER.password },
+    })
+    .catch(() => null)
 
   if (existing) return
 
