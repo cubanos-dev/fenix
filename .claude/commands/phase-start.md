@@ -27,7 +27,7 @@ For each frame referenced by the plan (by section + screen name):
 2. Copy the note block into `PLAN.md` under **"Verbatim pen notes"** — **verbatim**, exactly as it appears. Do not paraphrase. Do not re-order sentences. Do not "clean up" punctuation.
 3. Copy the `@pen <png-path>` reference line so later steps can cite it.
 
-If `pens/inventory/` is missing or stale, run `bun run pen:extract` first and follow the instructions it prints.
+If `pens/inventory/` is missing or stale, run `bun run pen:extract` to prepare the dirs, then invoke `Skill(fenix-pen-extract)` which walks the pen via Pencil MCP and writes the inventory markdown with verbatim note blocks.
 
 ### Step 3: Enumerate state variants per screen
 

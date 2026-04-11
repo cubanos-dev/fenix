@@ -3,7 +3,7 @@ import { existsSync, mkdirSync } from 'node:fs'
 import { join, resolve } from 'node:path'
 import { parseFlags, resolveRepoRoot } from './lib/phase.ts'
 
-const HELP = `pen-extract — prepare pen extraction directories and print MCP instructions.
+const HELP = `pen-extract — prepare pen extraction directories and point at the fenix-pen-extract skill.
 
 Usage:
   bun run scripts/pen-extract.ts [--pen <path>]
@@ -12,13 +12,12 @@ Options:
   --pen <path>   Path to the pen file (defaults to pens/app.pen).
   --help         Show this help.
 
-This is a thin wrapper. Real pen extraction requires the Pencil MCP tools,
-which must be invoked by the agent — Bun scripts cannot call MCP tools
-directly. The script validates inputs, prepares output directories, and
-prints a structured instruction block the agent follows step-by-step.
+This is a thin shim. The real extraction workflow lives in the
+fenix-pen-extract skill because it is an agent-driven multi-step task
+over Pencil MCP. This script only validates the pen file exists and
+prepares pens/inventory/ and pens/exports/ so the skill can write
+into them.
 `
-
-// TODO(M4-future): automate via mcp-client when available.
 
 function main(): number {
   const { flags } = parseFlags(process.argv.slice(2))
@@ -45,24 +44,12 @@ function main(): number {
   process.stdout.write(`  pen:       ${penPath}\n`)
   process.stdout.write(`  inventory: ${inventoryDir}\n`)
   process.stdout.write(`  exports:   ${exportsDir}\n\n`)
-  process.stdout.write('Agent instructions (run these MCP tool calls now):\n')
-  process.stdout.write(`  1. mcp__pencil__open_document ${penPath}\n`)
-  process.stdout.write("  2. mcp__pencil__batch_get { patterns: [{ type: 'frame', name: ' -- ' }] }\n")
-  process.stdout.write('     (collect every top-level section frame; section names look like "SC -- Dashboard")\n')
-  process.stdout.write('  3. For each section frame:\n')
-  process.stdout.write("     a. mcp__pencil__batch_get with pattern { type: 'frame', name: '<Section> -- ' }\n")
-  process.stdout.write('        to enumerate screen variants.\n')
-  process.stdout.write(
-    '     b. mcp__pencil__export_nodes for each screen frame → pens/exports/<section-slug>/<screen-slug>.png\n',
-  )
-  process.stdout.write(
-    "     c. mcp__pencil__batch_get for sibling { type: 'note' } nodes and pair each by title prefix.\n",
-  )
-  process.stdout.write('     d. Write pens/inventory/<section-slug>.md containing the section title, verbatim notes,\n')
-  process.stdout.write('        a per-screen block with @pen <png-path>, verbatim note, and frame dimensions.\n')
-  process.stdout.write('  4. Write pens/inventory/INDEX.md listing every section + screen with its inventory link.\n')
-  process.stdout.write('  5. Write pens/inventory/COMPONENTS.md listing reusable pen components (id + name).\n\n')
-  process.stdout.write('Rule: notes are copied verbatim. Never paraphrase. Never interpret. Stories cite by path.\n')
+  process.stdout.write('Now invoke the skill that drives the real extraction:\n')
+  process.stdout.write('  Skill(fenix-pen-extract)\n\n')
+  process.stdout.write('The skill is at skills/fenix-pen-extract/SKILL.md — it walks the pen via\n')
+  process.stdout.write('Pencil MCP, exports screen PNGs, and writes pens/inventory/ markdown with\n')
+  process.stdout.write('verbatim note blocks. Notes are copied character-for-character; stories\n')
+  process.stdout.write('cite them by path via @pen JSDoc tags.\n')
   return 0
 }
 

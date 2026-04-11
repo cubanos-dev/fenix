@@ -167,7 +167,7 @@ Nothing here is optional. The gates exist because phases shipped "done" while fe
 
 Pens are **input** and **reference**, never output. The agent does not author pens mid-phase. Pens drive the spec; the agent translates them into stories and code.
 
-**Extraction is one-time per pen update.** `bun run pen:extract` prepares `pens/inventory/` and prints the MCP instructions the agent follows: open the document, walk top-level frames, export each screen as PNG, copy sibling note blocks verbatim. The script is a thin wrapper — real work happens through Pencil MCP tools.
+**Extraction is one-time per pen update.** `bun run pen:extract` prepares `pens/inventory/` and `pens/exports/` then points at the **fenix-pen-extract** skill. The skill is the canonical extraction workflow — it walks the pen via Pencil MCP, exports each screen as PNG, pairs sibling `note` nodes with their screens by title prefix, and writes per-section inventory markdown with verbatim note blocks plus `pens/inventory/INDEX.md` and `pens/inventory/COMPONENTS.md`. The script is a thin shim; all real work happens in the skill. Token extraction follows the same pattern — `bun run pen:tokens` + **fenix-pen-tokens** skill — and reads pen variables the user defined manually in Pencil first.
 
 **Notes are quoted verbatim.** When a phase plan references a frame, it copies the note into `PLAN.md` → "Verbatim pen notes" exactly as it appears, typos and punctuation included. No paraphrasing, no summarising, no "cleaning up." Every lossy translation of a note is a chance for the story to drift from the design intent, which was the largest source of rework in prior projects.
 
