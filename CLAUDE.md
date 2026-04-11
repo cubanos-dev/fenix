@@ -72,6 +72,13 @@ Every route uses a three-layer architecture:
 - Geist Sans for UI text, Geist Mono for code/metrics.
 - shadcn/ui components — do not build primitives from scratch.
 - Use `cn()` from `@/lib/utils` for class merging.
+- Font slots are exposed as CSS custom properties in `app/globals.css` so each
+  project can swap families without rewriting components: `--font-sans` for
+  body copy, `--font-display` for hero/serif display faces, `--font-ui` for
+  UI labels/numerals, `--font-mono` for code and metrics. Fenix ships with
+  Geist mapped into `--font-sans` and `--font-mono`; the `--font-display` and
+  `--font-ui` slots stay aliased to `--font-sans` until a project overrides
+  them via `next/font/google` in `apps/app/app/[locale]/layout.tsx`.
 
 ## Agentic Development (GSD)
 
@@ -167,3 +174,44 @@ Pens are **input** and **reference**, never output. The agent does not author pe
 **Stories cite pens by path.** Storybook stories whose behaviour comes from a pen export add a `@pen pens/exports/<section>/<screen>.png` JSDoc tag. `bun run pen:drift` greps for the tag and flags any story whose target PNG changed; `bun run visual:diff --all` collects every pair for the visual regression step. The `@pen` tag is the link between the spec and the rendered UI, and both gates depend on it.
 
 **Tokens are user-defined.** `bun run pen:tokens` emits CSS custom properties from pen variables. Users define variables in Pencil once, per project — the script never guesses colours from raw hex, because guesses produce unstable tokens.
+
+## Component Override Pattern
+
+Shared shadcn primitives live in `apps/app/components/ui/*` and are treated as vendor source — do not edit them, and expect them to be refreshed with `npx shadcn@latest add`. Project-specific styling lives in a parallel directory keyed by the project name: `apps/app/components/ui/fenix/*` in the template, and `apps/app/components/ui/<project>/*` once the scaffolder renames it. App code imports from `@/components/ui/fenix/*` when an override exists for a component, otherwise from `@/components/ui/*` directly. Overrides wrap the shadcn base, apply the diff via `cn()`, and export a `<Project>`-prefixed wrapper (`FenixToggle`, `FenixButton`, etc.). Only add an override when a component actually needs project-specific styling; the directory stays empty in the template. See `apps/app/components/ui/fenix/README.md` for the full pattern and a worked example.
+
+## Naming Conventions
+
+- **Files and workspace packages**: `kebab-case` (`dev-seed.ts`, `packages/ui`, `components/ui/fenix/toggle.tsx`). Next.js reserved names (`page.tsx`, `layout.tsx`, `error.tsx`, `proxy.ts`) stay exact.
+- **Variables, functions, and methods**: `camelCase` (`signInUrl`, `requireSession`). Booleans are prefixed with `is`/`has`/`should` (`isAdmin`, `hasAccess`).
+- **Types, interfaces, and React components**: `PascalCase` (`DashboardScreenProps`, `DashboardScreen`). Prop interfaces end in `Props`.
+- **React hooks**: `use` prefix (`useSession`, `useBreakpoint`).
+- **Event handlers**: `on<Event>` for prop surfaces, `handle<Event>` for internal handlers (`onSubmit`, `handleSignIn`).
+- **Environment variables**: `UPPER_SNAKE_CASE`, namespaced by concern (`DATABASE_URL`, `BETTER_AUTH_SECRET`, `NEXT_PUBLIC_APP_URL`). Client-visible variables must start with `NEXT_PUBLIC_`.
+- **Directories**: plural for collections (`components/`, `lib/`, `e2e/`), `(parens)` for Next route groups, `_underscore` for non-routable children (`_components/`).
+- **Domain contexts** in `lib/domain/`: `kebab-case` (`lib/domain/billing/`, `lib/domain/workspaces/`).
+
+## Error Handling
+
+Errors are signal, not noise. Never swallow them silently. Every `catch` either rethrows with added context, logs with enough breadcrumbs to find the call site, or returns a structured error object the caller is designed to consume — there is no fourth option.
+
+- **Server Actions** return `{ ok: true, data } | { ok: false, error }` and surface `error` to the UI. Never throw across the `'use server'` boundary for expected failures.
+- **BetterAuth and Kysely errors** bubble out of `proxy.ts` and page components so Next's error boundaries can render `error.tsx`. Do not wrap them in try/catch just to `console.log` and move on.
+- **Domain-level failures** use custom error classes exported from `packages/domain/*/errors.ts` (e.g. `WorkspaceNotFoundError`). Callers catch by `instanceof`, not by string matching on `.message`.
+- **Logging**: include enough context to reproduce (user id, workspace id, request path). Never log secrets, tokens, raw request bodies, or full email addresses — mask first.
+- **Error boundaries** (`error.tsx`) ship a user-facing message plus a reset button. They are the last line of defence, not the first.
+
+## Versioning
+
+Fenix uses **single-monorepo versioning**: one version number in the root `package.json`, mirrored in every app `package.json` (`apps/web`, `apps/app`). Internal packages under `packages/*` stay at `0.0.0` — they are not published independently. Before pushing a release, bump the version in every tracked `package.json`, commit as `chore: bump monorepo version to X.Y.Z`, then tag with `git tag -a vX.Y.Z -m "vX.Y.Z — summary"`. Follow semver: patch for bug fixes, minor for backwards-compatible features, major for breaking changes. Phases number *features*, not releases — a phase like `03-billing` ships inside whatever semver bump it needs. Commit messages follow Conventional Commits (see `## Conventions → Commit format` below); the phase id goes in the scope (`feat(03-billing): ...`) so phase-gate commits are easy to grep.
+
+### Conventions → Commit format
+
+Commits follow the [Conventional Commits](https://www.conventionalcommits.org/) spec and are enforced by the `gsd-validate-commit.sh` hook (opt-in). The shape is `<type>(<scope>): <subject>`:
+
+- `feat(<context>): add workspace invite flow` — new user-visible functionality
+- `fix(<phase-id>): fix race in billing webhook retry` — bug fix inside a phase
+- `docs(<area>): clarify Pen Workflow section` — docs-only change
+- `refactor(<area>): extract useSession hook` — internal restructuring
+- `chore(<area>): bump turborepo to 2.6` — tooling, deps, version bumps
+
+The scope is free-form but should be either a phase id (`03-billing`) or a coarse area (`auth`, `db`, `ci`). Subjects are lowercase, imperative mood, no trailing period, ≤72 characters. The body (optional) explains *why*, not *what* — the diff already shows the what.

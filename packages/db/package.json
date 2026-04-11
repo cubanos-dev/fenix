@@ -11,9 +11,11 @@
   "dependencies": {
     "kysely": "^0.28.14",
     "@neondatabase/serverless": "^1.0.2",
+    "pg": "^8.16.0",
     "ws": "^8.20.0"
   },
   "devDependencies": {
+    "@types/pg": "^8.15.4",
     "@types/ws": "^8.18.0",
     "typescript": "^6.0.0"
   }

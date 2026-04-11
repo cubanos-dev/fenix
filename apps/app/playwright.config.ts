@@ -10,7 +10,6 @@ export default defineConfig({
   use: {
     baseURL: 'http://localhost:3001',
     trace: 'on-first-retry',
-    storageState: 'e2e/.auth/user.json',
   },
   projects: [
     {
@@ -19,8 +18,21 @@ export default defineConfig({
       use: { storageState: undefined },
     },
     {
-      name: 'chromium',
-      use: { ...devices['Desktop Chrome'] },
+      name: 'admin',
+      use: {
+        ...devices['Desktop Chrome'],
+        storageState: 'e2e/.auth/admin.json',
+      },
+      testIgnore: /member/,
+      dependencies: ['setup'],
+    },
+    {
+      name: 'member',
+      use: {
+        ...devices['Desktop Chrome'],
+        storageState: 'e2e/.auth/member.json',
+      },
+      testMatch: /member/,
       dependencies: ['setup'],
     },
   ],
@@ -28,5 +40,14 @@ export default defineConfig({
     command: 'bun run dev',
     url: 'http://localhost:3001',
     reuseExistingServer: !process.env.CI,
+    timeout: 300_000,
+    env: {
+      USE_PG_DRIVER: 'true',
+      DATABASE_URL: 'postgresql://fenix_test:fenix_test@localhost:5433/fenix_test',
+      DATABASE_URL_UNPOOLED: 'postgresql://fenix_test:fenix_test@localhost:5433/fenix_test',
+      SEED_DEV_USERS: 'true',
+      BETTER_AUTH_SECRET: 'e2e-test-secret-not-for-production',
+      BETTER_AUTH_URL: 'http://localhost:3001',
+    },
   },
 })

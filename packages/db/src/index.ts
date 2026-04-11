@@ -1,11 +1,21 @@
 import { Kysely, PostgresDialect } from 'kysely'
-import { Pool, neonConfig } from '@neondatabase/serverless'
-import ws from 'ws'
 import type { Database } from './types'
 
-neonConfig.webSocketConstructor = ws
+async function createPool() {
+  if (process.env.USE_PG_DRIVER === 'true') {
+    const pg = await import('pg')
+    return new pg.default.Pool({
+      connectionString: process.env.DATABASE_URL,
+      max: 10,
+      idleTimeoutMillis: 30_000,
+      connectionTimeoutMillis: 10_000,
+    })
+  }
 
-function createPool() {
+  const { Pool, neonConfig } = await import('@neondatabase/serverless')
+  const ws = await import('ws')
+  neonConfig.webSocketConstructor = ws.default as unknown as typeof WebSocket
+
   return new Pool({
     connectionString: process.env.DATABASE_URL,
     max: 10,
@@ -14,7 +24,7 @@ function createPool() {
   })
 }
 
-export const pool = createPool()
+export const pool = await createPool()
 
 function createDb() {
   return new Kysely<Database>({

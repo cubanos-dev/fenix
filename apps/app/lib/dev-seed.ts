@@ -7,7 +7,7 @@ const DEV_USER = {
 }
 
 export async function seedDevUser() {
-  if (process.env.NODE_ENV !== 'development') return
+  if (process.env.NODE_ENV === 'production' && process.env.SEED_DEV_USERS !== 'true') return
 
   const existing = await auth.api
     .signInEmail({
