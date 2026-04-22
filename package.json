@@ -27,7 +27,10 @@
     "pen:drift": "bun run scripts/pen-drift-check.ts",
     "pen:tokens": "bun run scripts/pen-tokens.ts",
     "visual:diff": "bun run scripts/visual-diff.ts",
-    "phase:gate": "bun run scripts/phase-gate.ts"
+    "phase:gate": "bun run scripts/phase-gate.ts",
+    "slop:test": "bun run scripts/slop-test.ts",
+    "design:teach": "echo 'Run /fenix-impeccable teach in Claude Code — reads docs/PRODUCT.md into .impeccable.md'",
+    "design:seed": "echo 'Run /fenix-impeccable seed in Claude Code — seeds the design-system pen via Pencil MCP'"
   },
   "devDependencies": {
     "lefthook": "^2.1.4",

@@ -16,10 +16,11 @@ Options:
 
 Gates, in order:
   1. pattern-audit  (informational — logs candidates, never blocks)
-  2. coverage-audit (HARD — blocks on uncovered files)
-  3. bun run validate (HARD — typecheck + format + lint + unit/storybook tests)
-  4. browser-verify (instructed — agent invokes agent-browser-verify skill)
-  5. phase-reviewer (instructed — agent invokes phase-reviewer subagent)
+  2. slop-test      (informational — impeccable absolute-ban patterns in diff)
+  3. coverage-audit (HARD — blocks on uncovered files)
+  4. bun run validate (HARD — typecheck + format + lint + unit/storybook tests)
+  5. browser-verify (instructed — agent invokes agent-browser-verify skill)
+  6. phase-reviewer (instructed — agent invokes phase-reviewer subagent)
 
 Exit codes: 0 = all hard gates green, non-zero = blocked.
 `
@@ -81,6 +82,24 @@ function main(): number {
     kind: 'soft',
     status: patternProbe.code === 0 ? 'pass' : 'fail',
     detail: 'informational — cite findings in PLAN.md',
+  })
+
+  const slop = runScript(root, 'scripts/slop-test.ts', ['--phase', phase, '--base', base, '--json'])
+  let slopFindings = 0
+  try {
+    const parsed = JSON.parse(slop.out)
+    if (parsed && Array.isArray(parsed.findings)) slopFindings = parsed.findings.length
+  } catch {
+    slopFindings = 0
+  }
+  gates.push({
+    name: 'slop-test',
+    kind: 'soft',
+    status: slopFindings === 0 ? 'pass' : 'fail',
+    detail:
+      slopFindings === 0
+        ? 'no impeccable absolute-ban patterns in diff'
+        : `${slopFindings} finding(s) — run \`bun run slop:test --phase ${phase}\` for details (informational)`,
   })
 
   const coverage = runScript(root, 'scripts/coverage-audit.ts', ['--phase', phase, '--base', base])
