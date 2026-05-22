@@ -1,76 +1,23 @@
 {
-  "hooks": {
-    "SessionStart": [
-      {
-        "hooks": [
-          {
-            "type": "command",
-            "command": "node .claude/hooks/gsd-check-update.js"
-          },
-          {
-            "type": "command",
-            "command": "bash .claude/hooks/gsd-session-state.sh"
-          }
-        ]
-      }
-    ],
-    "PostToolUse": [
-      {
-        "matcher": "Bash|Edit|Write|MultiEdit|Agent|Task",
-        "hooks": [
-          {
-            "type": "command",
-            "command": "node .claude/hooks/gsd-context-monitor.js",
-            "timeout": 10
-          }
-        ]
-      },
-      {
-        "matcher": "Write|Edit|MultiEdit",
-        "hooks": [
-          {
-            "type": "command",
-            "command": "bash .claude/hooks/gsd-phase-boundary.sh",
-            "timeout": 5
-          }
-        ]
-      }
-    ],
-    "PreToolUse": [
-      {
-        "matcher": "Write|Edit",
-        "hooks": [
-          {
-            "type": "command",
-            "command": "node .claude/hooks/gsd-prompt-guard.js",
-            "timeout": 5
-          },
-          {
-            "type": "command",
-            "command": "node .claude/hooks/gsd-read-guard.js",
-            "timeout": 5
-          },
-          {
-            "type": "command",
-            "command": "node .claude/hooks/gsd-workflow-guard.js",
-            "timeout": 5
-          }
-        ]
-      },
-      {
-        "matcher": "Bash",
-        "hooks": [
-          {
-            "type": "command",
-            "command": "bash .claude/hooks/gsd-validate-commit.sh",
-            "timeout": 5
-          }
-        ]
-      }
+  "$schema": "https://json.schemastore.org/claude-code-settings.json",
+  "permissions": {
+    "allow": [
+      "Bash(bun *)",
+      "Bash(git *)",
+      "Bash(bunx biome *)",
+      "Bash(bunx turbo *)",
+      "Bash(node *)",
+      "Bash(npx pencil *)"
     ]
   },
-  "statusLine": {
-    "type": "command",
-    "command": "node .claude/hooks/gsd-statusline.js"
+  "mcpServers": {
+    "context7": {
+      "command": "npx",
+      "args": ["-y", "@upstash/context7-mcp"]
+    },
+    "playwright": {
+      "command": "npx",
+      "args": ["-y", "@playwright/mcp@latest"]
+    }
   }
 }

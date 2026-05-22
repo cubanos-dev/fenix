@@ -1,12 +1,25 @@
+# Lefthook config — Fenix autonomous loop
+#
+# pre-commit  — cheap checks that must pass before any commit lands
+# pre-push    — heavier checks before the commit hits the remote
+#
+# Future additions (land with Stream D scripts):
+#   pre-commit: coverage:audit (every state has a story, every route has E2E)
+#   pre-commit: fenix-pin-checks (rejects IMPLEMENT commits that touch pinned
+#               check files — the X_PASS_X enforcer)
+#   pre-push:   regenerate + run the latest phase's golden-path Playwright spec
+
 pre-commit:
   parallel: true
   jobs:
-    - name: format
-      glob: "apps/**/*.{ts,tsx,json}"
+    - name: format-staged
+      glob: "{apps,packages}/**/*.{ts,tsx,json,css}"
       run: bunx biome format --write {staged_files}
       stage_fixed: true
-    - name: lint
+
+    - name: biome
       run: bunx turbo lint
+
     - name: typecheck
       run: bunx turbo typecheck
 
@@ -14,5 +27,6 @@ pre-push:
   jobs:
     - name: build
       run: bunx turbo build
+
     - name: test
       run: bunx turbo test
