@@ -8,19 +8,16 @@
     "./user": "./src/user/index.ts"
   },
   "scripts": {
-    "lint": "eslint .",
+    "lint": "biome check .",
     "typecheck": "tsc --noEmit",
     "format": "biome format --write .",
     "format:check": "biome format .",
-    "validate": "tsc --noEmit && biome format . && eslint ."
+    "validate": "tsc --noEmit && biome check ."
   },
   "devDependencies": {
     "@biomejs/biome": "^2.4.0",
     "@fenix/biome-config": "workspace:*",
-    "@fenix/eslint-config": "workspace:*",
     "@fenix/typescript-config": "workspace:*",
-    "eslint": "^9.39.0",
-    "eslint-config-next": "^16.2.0",
     "typescript": "^6.0.0"
   }
 }
