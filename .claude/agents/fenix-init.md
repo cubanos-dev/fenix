@@ -24,13 +24,17 @@ Walk the user through the seven structured questions below using `AskUserQuestio
 # Output (in this order)
 
 1. Write `USER_IDEA.md` at repo root using the template; fill every heading with the user's exact answers (no paraphrasing). Append the "Anything else" answer verbatim under that heading.
-2. For every `package.json` in the repo that has `"name": "@fenix/..."`, rename to `@<project>/...`. Use `Edit` per file; do not regex-rewrite the whole tree. Same for `"@fenix/*": "workspace:*"` deps.
+2. **Rename `@fenix/*` to `@<project>/*` across the whole repo** by running:
+   ```
+   bun scripts/rename-fenix.ts <project-name>
+   ```
+   This single script rewrites every `package.json`, every `*.ts/.tsx/.js/.mjs/.css/.json/.md` import, every `extends` chain (`@fenix/biome-config`, `@fenix/typescript-config`), in one atomic pass. Do **not** edit those files individually — the script is the contract. After it finishes, run `bun install` so `bun.lock` picks up the new workspace names.
 3. Write `docs/STACK.md` filtered to the user's opt-ins (omit Stripe/Vercel-AI-Gateway/Mapbox rows if not selected).
 4. Update `.claude/settings.json` `mcpServers` block:
    - Always-on: keep Context7, Playwright; add BetterAuth, Pencil.
    - Conditional: add Stripe MCP only if payments opted-in; add AI Gateway MCP only if LLM opted-in; add Sentry + PostHog MCPs only if those MCPs exist (check `npm view <pkg> versions` via `Bash`; skip if not published).
-5. Scaffold `apps/fenix/` skeleton (delegated to Stream K work — initially just `package.json` + empty `app/layout.tsx` + `lib/db.ts` SQLite schema creation).
-6. Create empty `.planning/fenix.db` by running the SQLite schema migration once via `Bash`.
+5. **Verify** `apps/fenix/` already exists (it ships with the template) and that its `package.json` was correctly renamed by step 2. Do not re-scaffold it. If for some reason the directory is missing (manual deletion, partial clone), halt with `apps/fenix missing — re-clone the template`.
+6. Create empty `.planning/fenix.db` by running `bun run fenix:init-db` (the pre-flight in `/fenix-init` may have done this already; the script is idempotent).
 7. Initial commit: `chore: init <project-name> via fenix` (Conventional Commits scope = project name).
 
 # Behavior rules

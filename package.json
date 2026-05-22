@@ -37,10 +37,16 @@
     "phase:gate:slop": "bun scripts/slop-test.ts",
     "pen:extract": "bun scripts/pen-extract.ts",
     "pen:tokens": "bun scripts/pen-tokens.ts",
-    "pin-checks": "bun scripts/fenix-pin-checks.ts"
+    "pin-checks": "bun scripts/fenix-pin-checks.ts",
+    "rename-fenix": "bun scripts/rename-fenix.ts",
+    "init-project": "bun scripts/init-project.ts"
   },
   "devDependencies": {
+    "@types/pixelmatch": "^5.2.6",
+    "@types/pngjs": "^6.0.5",
     "lefthook": "^2.1.4",
+    "pixelmatch": "^7.1.0",
+    "pngjs": "^7.0.0",
     "tailwindcss": "^4.2.2",
     "turbo": "^2.5.0"
   }
