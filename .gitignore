@@ -66,10 +66,6 @@ test-results/
 # typescript build cache
 *.tsbuildinfo
 
-# vercel
-.vercel
-.env*.local
-
 # scaffolder marker — written by scripts/init-project.ts on first run so re-running
 # is a no-op. Must never live in the fenix source template itself.
 .fenix-initialized
