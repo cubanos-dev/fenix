@@ -1,5 +1,5 @@
-import { NextRequest, NextResponse } from 'next/server'
 import { auth } from '@fenix/auth'
+import { type NextRequest, NextResponse } from 'next/server'
 
 const publicPaths = ['/api/auth']
 

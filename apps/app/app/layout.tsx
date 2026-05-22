@@ -1,11 +1,10 @@
+import { GeistMono } from 'geist/font/mono'
+import { GeistSans } from 'geist/font/sans'
 import type { Metadata } from 'next'
 import { NextIntlClientProvider } from 'next-intl'
 import { getLocale, getMessages } from 'next-intl/server'
 import { ThemeProvider } from 'next-themes'
-import { TooltipProvider } from '@/components/ui/tooltip'
 import { Toaster } from 'sonner'
-import { GeistSans } from 'geist/font/sans'
-import { GeistMono } from 'geist/font/mono'
 import './globals.css'
 
 export const metadata: Metadata = {
@@ -22,7 +21,7 @@ export default async function RootLayout({ children }: { children: React.ReactNo
       <body className={`${GeistSans.variable} ${GeistMono.variable} font-sans antialiased`}>
         <NextIntlClientProvider messages={messages}>
           <ThemeProvider attribute="class" defaultTheme="dark" enableSystem disableTransitionOnChange>
-            <TooltipProvider>{children}</TooltipProvider>
+            {children}
             <Toaster richColors position="bottom-right" />
           </ThemeProvider>
         </NextIntlClientProvider>

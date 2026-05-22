@@ -13,8 +13,8 @@
       "lib/**/*.tsx",
       "i18n/**/*.ts",
       "!**/next-env.d.ts",
-      "!**/.next/**",
-      "!**/.turbo/**",
+      "!**/.next",
+      "!**/.turbo",
       "!**/vitest.config.ts"
     ]
   }

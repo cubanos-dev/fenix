@@ -14,8 +14,8 @@
       "i18n/**/*.ts",
       "emails/**/*.tsx",
       "!**/next-env.d.ts",
-      "!**/.next/**",
-      "!**/.turbo/**",
+      "!**/.next",
+      "!**/.turbo",
       "!**/vitest.config.ts"
     ]
   }
