@@ -28,7 +28,16 @@
     "fenix:gate-record": "bun .claude/scripts/fenix-auto.ts gate-record",
     "fenix:phases": "bun .claude/scripts/fenix-auto.ts phases",
     "fenix:events": "bun .claude/scripts/fenix-auto.ts events",
-    "fenix:rehydrate": "bun .claude/scripts/fenix-auto.ts rehydrate"
+    "fenix:rehydrate": "bun scripts/fenix-rehydrate.ts",
+    "phase:gate": "bun scripts/phase-gate.ts",
+    "phase:gate:coverage": "bun scripts/coverage-audit.ts",
+    "phase:gate:visual": "bun scripts/visual-diff.ts",
+    "phase:gate:pen-drift": "bun scripts/pen-drift-check.ts",
+    "phase:gate:pattern": "bun scripts/pattern-audit.ts",
+    "phase:gate:slop": "bun scripts/slop-test.ts",
+    "pen:extract": "bun scripts/pen-extract.ts",
+    "pen:tokens": "bun scripts/pen-tokens.ts",
+    "pin-checks": "bun scripts/fenix-pin-checks.ts"
   },
   "devDependencies": {
     "lefthook": "^2.1.4",

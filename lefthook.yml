@@ -3,17 +3,21 @@
 # pre-commit  — cheap checks that must pass before any commit lands
 # pre-push    — heavier checks before the commit hits the remote
 #
-# Future additions (land with Stream D scripts):
-#   pre-commit: coverage:audit (every state has a story, every route has E2E)
-#   pre-commit: fenix-pin-checks (rejects IMPLEMENT commits that touch pinned
-#               check files — the X_PASS_X enforcer)
-#   pre-push:   regenerate + run the latest phase's golden-path Playwright spec
+# `fenix-pin-checks` is the X_PASS_X enforcer: while a phase is in
+# implementation, the files pinned by its DEFINE_CHECKS commit are locked.
+# `--no-verify` is not an escape — the only valid bypass is `git revert
+# <CHECKS_COMMIT_SHA>` for the affected phase.
 
 pre-commit:
   parallel: true
   jobs:
+    - name: fenix-pin-checks
+      run: bun scripts/fenix-pin-checks.ts
+      # No `glob` filter — the script reads the staged set itself and
+      # intersects it with the pinned set per active phase.
+
     - name: format-staged
-      glob: "{apps,packages}/**/*.{ts,tsx,json,css}"
+      glob: "{apps,packages,scripts,.claude/scripts}/**/*.{ts,tsx,json,css}"
       run: bunx biome format --write {staged_files}
       stage_fixed: true
 
