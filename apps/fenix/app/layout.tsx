@@ -38,6 +38,7 @@ function Sidebar() {
       <nav className="space-y-1 text-sm">
         <SidebarLink href="/" label="Overview" />
         <SidebarLink href="/research" label="Research" />
+        <SidebarLink href="/lessons" label="Lessons" />
         <SidebarLink href="/controls" label="Controls" />
       </nav>
       <div className="mt-8 px-2 text-xs text-muted-foreground/60">

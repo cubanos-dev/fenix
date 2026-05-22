@@ -63,6 +63,20 @@ export interface Approval {
   signer: string | null
 }
 
+export interface Lesson {
+  id: string
+  ts: number
+  scope: string
+  category: string
+  severity: string
+  applies_to: string[]
+  evidence: string[]
+  phase: string | null
+  status: 'proposed' | 'applied' | 'archived'
+  title: string
+  body_md_path: string
+}
+
 export function listVersions(): Version[] {
   const db = readDb()
   if (!db) return []
@@ -132,6 +146,89 @@ export function listApprovals(): Approval[] {
   return db
     .prepare(`SELECT stage, payload_id, approved_at, signer FROM approvals ORDER BY approved_at DESC`)
     .all() as Approval[]
+}
+
+interface LessonRow {
+  id: string
+  ts: number
+  scope: string
+  category: string
+  severity: string
+  applies_to_json: string
+  evidence_json: string
+  phase: string | null
+  status: 'proposed' | 'applied' | 'archived'
+  title: string
+  body_md_path: string
+}
+
+function rowToLesson(r: LessonRow): Lesson {
+  let appliesTo: string[] = []
+  let evidence: string[] = []
+  try {
+    const parsed = JSON.parse(r.applies_to_json) as unknown
+    if (Array.isArray(parsed)) appliesTo = parsed.map(String)
+  } catch {
+    /* leave empty */
+  }
+  try {
+    const parsed = JSON.parse(r.evidence_json) as unknown
+    if (Array.isArray(parsed)) evidence = parsed.map(String)
+  } catch {
+    /* leave empty */
+  }
+  return {
+    id: r.id,
+    ts: r.ts,
+    scope: r.scope,
+    category: r.category,
+    severity: r.severity,
+    applies_to: appliesTo,
+    evidence,
+    phase: r.phase,
+    status: r.status,
+    title: r.title,
+    body_md_path: r.body_md_path,
+  }
+}
+
+export function listLessons(opts: { scope?: string; status?: string; category?: string } = {}): Lesson[] {
+  const db = readDb()
+  if (!db) return []
+  const filters: string[] = []
+  const args: string[] = []
+  if (opts.scope) {
+    filters.push('scope = ?')
+    args.push(opts.scope)
+  }
+  if (opts.status) {
+    filters.push('status = ?')
+    args.push(opts.status)
+  }
+  if (opts.category) {
+    filters.push('category = ?')
+    args.push(opts.category)
+  }
+  const where = filters.length > 0 ? `WHERE ${filters.join(' AND ')}` : ''
+  const rows = db
+    .prepare(
+      `SELECT id, ts, scope, category, severity, applies_to_json, evidence_json, phase, status, title, body_md_path
+       FROM lessons ${where} ORDER BY ts DESC`,
+    )
+    .all(...args) as LessonRow[]
+  return rows.map(rowToLesson)
+}
+
+export function getLesson(id: string): Lesson | null {
+  const db = readDb()
+  if (!db) return null
+  const row = db
+    .prepare(
+      `SELECT id, ts, scope, category, severity, applies_to_json, evidence_json, phase, status, title, body_md_path
+       FROM lessons WHERE id = ?`,
+    )
+    .get(id) as LessonRow | null
+  return row ? rowToLesson(row) : null
 }
 
 export interface Overview {

@@ -137,6 +137,68 @@ bun run scripts/fenix-rehydrate.ts --phase <phase-id>
 
 This refreshes `.planning/fenix.db` so the Fenix UI sees the new COMPLETION.md and updates the phase status to "shipped."
 
+# Lesson harvest (before committing)
+
+The loop only improves if you write down what went sideways. Before the
+final commit, scan the phase's artifacts and propose 0–N lessons. Quality
+beats quantity — only file a lesson when there's a non-obvious takeaway a
+future phase or future project would benefit from.
+
+**What to scan:**
+- `.artifacts/phase-reviewer.json` — any rejected iterations, even if the
+  final verdict was `done`. The rejection rationale is the goldmine.
+- `.artifacts/coverage-audit.json`, `.artifacts/visual-diff.json`,
+  `.artifacts/pen-drift.json` — any HARD-gate that flipped from fail → pass
+  across builder retries. The fix the builder made is a candidate lesson.
+- `bun .claude/scripts/fenix-auto.ts events --phase <phase-id> --limit 100 --json`
+  — look for `gate-result` events with `status=fail`, `lesson-proposed`
+  patterns recurring, builder retries.
+- `bun .claude/scripts/fenix-auto.ts feedback` rows for this version —
+  user-supplied "this isn't what I meant" signal.
+
+**Categories to recognize:**
+- `state-coverage` — contract enumerated wrong/missing states
+- `tolerance` — visual-diff budget mis-calibrated for this component class
+- `slop` — `:any`, TODO-without-owner, console.log that snuck in
+- `pattern` — page/screen split, naming, override directory, etc.
+- `quality` — phase-reviewer rejection that was substantive
+- `feedback-fit` — user feedback that recurred across iterations
+- `infra` — gate-script or orchestrator behavior surprise
+
+**How to propose:**
+
+```bash
+bun .claude/scripts/fenix-auto.ts lessons-propose \
+  --scope agent:fenix-contract-author \
+  --category state-coverage \
+  --severity recurring \
+  --title "Async data fetches must enumerate a loading state" \
+  --phase <phase-id> \
+  --applies-to forms,async-data \
+  --evidence ".planning/phases/<phase-id>/.artifacts/phase-reviewer.json" \
+  --body-file /tmp/lesson-body.md
+```
+
+The body markdown should explain:
+1. What happened (one paragraph, factual)
+2. Why it's a lesson (the non-obvious takeaway)
+3. Proposed amendment (concrete: "in `.claude/agents/<name>.md`, change/add: …")
+
+**Scope guide:**
+- `agent:<name>` — the lesson amends a specific subagent's prompt
+- `gate:<name>` — the lesson amends gate-script behavior (e.g. tolerance default)
+- `stage:<name>` — applies across a whole stage
+- `loop` — orchestrator-level (rare)
+
+**Default severity** = `one-off`. Bump to `recurring` only if you can
+point at multiple phases where this surfaced. Bump to `pattern` only if
+it's so consistent it should land in the agent prompt now.
+
+Surface the proposed lessons in your stdout summary so the user sees
+them before the commit. The lessons land on disk and in `fenix.db` —
+they do NOT auto-amend agent prompts. Promotion to `applied` is a
+human review step.
+
 # Optional — open PR
 
 If `--pr` flag passed (or `fenix.config.ts` has `autoOpenPR: true`):
@@ -171,6 +233,9 @@ gh pr create \
   "commit_sha": "<sha>",
   "pr_url": "<url or null>",
   "fenix_db_updated": true,
+  "lessons_proposed": [
+    { "id": "2026-05-23-001", "scope": "agent:fenix-contract-author", "category": "state-coverage" }
+  ],
   "wall_time_ms": N
 }
 ```

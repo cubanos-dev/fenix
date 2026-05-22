@@ -36,6 +36,14 @@ import {
   upsertPhase,
   type PhaseStatus,
 } from './lib/db'
+import {
+  listLessons,
+  mirrorLessonsToDb,
+  setLessonStatus,
+  writeLesson,
+  type LessonSeverity,
+  type LessonStatus,
+} from './lib/lessons'
 import { existsSync, readdirSync, readFileSync } from 'node:fs'
 import { join, resolve } from 'node:path'
 
@@ -78,7 +86,26 @@ Commands:
                             --json-path <path> path to gate artifact JSON
   phases                  list phases [--version <v>] [--json]
   events                  list recent events [--phase <id>] [--limit 50] [--json]
-  rehydrate               rebuild fenix.db from .planning/ artifacts
+  lessons-list            list lessons applicable to a scope
+                            --scope <s>        filter (e.g. agent:fenix-contract-author, loop)
+                            --status <s>       filter (proposed|applied|archived)
+                            --category <c>     filter
+                            --json             machine-readable
+  lessons-propose         write a new lesson .md + mirror to fenix.db
+                            --scope <s>        required
+                            --category <c>     required
+                            --title "…"        required
+                            --body "…"         lesson body (markdown); or --body-file <path>
+                            --severity <s>     one-off|recurring|pattern (default one-off)
+                            --applies-to a,b   comma-separated tags
+                            --evidence a,b     comma-separated artifact paths
+                            --phase <id>       phase that surfaced it
+                            --status <s>       proposed|applied (default proposed)
+  lessons-apply           mark a lesson applied (id) — agent prompt was amended
+                            --id <id>          required
+  lessons-archive         mark a lesson archived (id) — superseded or retracted
+                            --id <id>          required
+  rehydrate               rebuild fenix.db from .planning/ artifacts (phases, versions, lessons)
   dispatch <sub> [args…]  advisory: echo what /fenix-auto <sub> would orchestrate
 
 Slash commands invoke these via Bash; see .claude/commands/fenix-auto.md.
@@ -425,6 +452,121 @@ function cmdEvents(args: Argv): void {
   }
 }
 
+/* ---------- lessons ---------- */
+
+function cmdLessonsList(args: Argv): void {
+  const scopeFilter = typeof args.flags.scope === 'string' ? args.flags.scope : null
+  const statusFilter = typeof args.flags.status === 'string' ? args.flags.status : null
+  const categoryFilter = typeof args.flags.category === 'string' ? args.flags.category : null
+  const all = listLessons()
+  const filtered = all.filter((l) => {
+    if (scopeFilter && l.scope !== scopeFilter) return false
+    if (statusFilter && l.status !== statusFilter) return false
+    if (categoryFilter && l.category !== categoryFilter) return false
+    return true
+  })
+  if (args.flags.json) {
+    printJson({ status: 'ok', lessons: filtered })
+    return
+  }
+  if (filtered.length === 0) {
+    process.stdout.write('(no lessons matched)\n')
+    return
+  }
+  for (const l of filtered) {
+    process.stdout.write(
+      `${l.id}  ${l.status.padEnd(9)}  ${l.scope.padEnd(28)}  ${l.category.padEnd(16)}  ${l.title}\n`,
+    )
+  }
+}
+
+function cmdLessonsPropose(args: Argv): void {
+  const scope = requireFlag(args.flags, 'scope')
+  const category = requireFlag(args.flags, 'category')
+  const title = requireFlag(args.flags, 'title')
+
+  let body: string
+  const bodyFile = typeof args.flags['body-file'] === 'string' ? args.flags['body-file'] : null
+  if (bodyFile) {
+    if (!existsSync(bodyFile)) fail(`--body-file does not exist: ${bodyFile}`)
+    body = readFileSync(bodyFile, 'utf-8')
+  } else if (typeof args.flags.body === 'string') {
+    body = args.flags.body
+  } else {
+    fail('one of --body "…" or --body-file <path> is required')
+  }
+
+  const severity = (typeof args.flags.severity === 'string' ? args.flags.severity : 'one-off') as LessonSeverity
+  const status = (typeof args.flags.status === 'string' ? args.flags.status : 'proposed') as LessonStatus
+  const phase = typeof args.flags.phase === 'string' ? args.flags.phase : null
+
+  const appliesTo =
+    typeof args.flags['applies-to'] === 'string'
+      ? args.flags['applies-to'].split(',').map((s) => s.trim()).filter(Boolean)
+      : []
+  const evidence =
+    typeof args.flags.evidence === 'string'
+      ? args.flags.evidence.split(',').map((s) => s.trim()).filter(Boolean)
+      : []
+
+  const lesson = writeLesson({
+    scope,
+    category,
+    title,
+    body,
+    severity,
+    applies_to: appliesTo,
+    evidence,
+    phase,
+    status,
+  })
+
+  const db = openDb()
+  mirrorLessonsToDb(db)
+  appendEvent(db, {
+    ts: Date.now(),
+    stage: 'orchestrator',
+    phase_id: phase,
+    kind: 'lesson-proposed',
+    payload_json: JSON.stringify({ id: lesson.id, scope, category, severity }),
+  })
+  db.close()
+
+  printJson({ status: 'ok', lesson: { id: lesson.id, path: lesson.body_md_path } })
+}
+
+function cmdLessonsApply(args: Argv): void {
+  const id = requireFlag(args.flags, 'id')
+  const lesson = setLessonStatus(id, 'applied')
+  const db = openDb()
+  mirrorLessonsToDb(db)
+  appendEvent(db, {
+    ts: Date.now(),
+    stage: 'orchestrator',
+    phase_id: null,
+    kind: 'lesson-applied',
+    payload_json: JSON.stringify({ id, scope: lesson.scope }),
+  })
+  db.close()
+  printJson({ status: 'ok', lesson: { id, status: 'applied' } })
+}
+
+function cmdLessonsArchive(args: Argv): void {
+  const id = requireFlag(args.flags, 'id')
+  const lesson = setLessonStatus(id, 'archived')
+  const db = openDb()
+  mirrorLessonsToDb(db)
+  appendEvent(db, {
+    ts: Date.now(),
+    stage: 'orchestrator',
+    phase_id: null,
+    kind: 'lesson-archived',
+    payload_json: JSON.stringify({ id, scope: lesson.scope }),
+  })
+  db.close()
+  printJson({ status: 'ok', lesson: { id, status: 'archived' } })
+}
+
 /* ---------- rehydrate ---------- */
 
 function cmdRehydrate(): void {
@@ -476,15 +618,18 @@ function cmdRehydrate(): void {
     }
   }
 
+  // Lessons — derived from .planning/learnings/<id>.md
+  const lessonCount = mirrorLessonsToDb(db)
+
   appendEvent(db, {
     ts: Date.now(),
     stage: 'orchestrator',
     phase_id: null,
     kind: 'rehydrated',
-    payload_json: JSON.stringify({ phaseCount, versionCount }),
+    payload_json: JSON.stringify({ phaseCount, versionCount, lessonCount }),
   })
   db.close()
-  printJson({ status: 'ok', phases: phaseCount, versions: versionCount })
+  printJson({ status: 'ok', phases: phaseCount, versions: versionCount, lessons: lessonCount })
 }
 
 function parseFrontmatter(text: string): Record<string, string> {
@@ -557,6 +702,14 @@ function main(): void {
         return cmdEvents(args)
       case 'rehydrate':
         return cmdRehydrate()
+      case 'lessons-list':
+        return cmdLessonsList(args)
+      case 'lessons-propose':
+        return cmdLessonsPropose(args)
+      case 'lessons-apply':
+        return cmdLessonsApply(args)
+      case 'lessons-archive':
+        return cmdLessonsArchive(args)
       case 'dispatch':
         return cmdDispatch(args)
       default:

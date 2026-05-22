@@ -105,6 +105,23 @@ CREATE TABLE IF NOT EXISTS feedback (
   ts        INTEGER NOT NULL,
   applied   INTEGER NOT NULL DEFAULT 0    -- 0 = pending, 1 = applied, -1 = rejected
 );
+
+CREATE TABLE IF NOT EXISTS lessons (
+  id              TEXT PRIMARY KEY,         -- e.g. "2026-05-23-001"
+  ts              INTEGER NOT NULL,
+  scope           TEXT NOT NULL,            -- loop | agent:<name> | gate:<name> | stage:<name>
+  category        TEXT NOT NULL,            -- state-coverage | tolerance | slop | pattern | quality | ...
+  severity        TEXT NOT NULL,            -- one-off | recurring | pattern
+  applies_to_json TEXT NOT NULL DEFAULT '[]',
+  evidence_json   TEXT NOT NULL DEFAULT '[]',
+  phase           TEXT,                     -- phase that surfaced it (optional)
+  status          TEXT NOT NULL,            -- proposed | applied | archived
+  title           TEXT NOT NULL,
+  body_md_path    TEXT NOT NULL             -- relative to repo root
+);
+CREATE INDEX IF NOT EXISTS idx_lessons_scope    ON lessons(scope);
+CREATE INDEX IF NOT EXISTS idx_lessons_status   ON lessons(status);
+CREATE INDEX IF NOT EXISTS idx_lessons_category ON lessons(category);
 `
 
 export function resolveDbPath(custom?: string): string {
