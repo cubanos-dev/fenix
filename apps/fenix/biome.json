@@ -1,0 +1,17 @@
+{
+  "$schema": "https://biomejs.dev/schemas/2.4.9/schema.json",
+  "extends": ["@fenix/biome-config/biome.json"],
+  "files": {
+    "includes": [
+      "app/**/*.ts",
+      "app/**/*.tsx",
+      "components/**/*.ts",
+      "components/**/*.tsx",
+      "lib/**/*.ts",
+      "lib/**/*.tsx",
+      "!**/next-env.d.ts",
+      "!**/.next",
+      "!**/.turbo"
+    ]
+  }
+}
