@@ -16,7 +16,19 @@
     "e2e": "turbo e2e",
     "db:migrate": "bun run --cwd apps/app lib/migrator.ts",
     "env:pull": "vercel env pull .env.local",
-    "prepare": "lefthook install"
+    "prepare": "lefthook install",
+    "fenix": "bun .claude/scripts/fenix-auto.ts",
+    "fenix:init-db": "bun .claude/scripts/fenix-auto.ts init-db",
+    "fenix:status": "bun .claude/scripts/fenix-auto.ts status",
+    "fenix:event": "bun .claude/scripts/fenix-auto.ts event",
+    "fenix:approve": "bun .claude/scripts/fenix-auto.ts approve",
+    "fenix:check-approval": "bun .claude/scripts/fenix-auto.ts check-approval",
+    "fenix:feedback": "bun .claude/scripts/fenix-auto.ts feedback",
+    "fenix:phase-update": "bun .claude/scripts/fenix-auto.ts phase-update",
+    "fenix:gate-record": "bun .claude/scripts/fenix-auto.ts gate-record",
+    "fenix:phases": "bun .claude/scripts/fenix-auto.ts phases",
+    "fenix:events": "bun .claude/scripts/fenix-auto.ts events",
+    "fenix:rehydrate": "bun .claude/scripts/fenix-auto.ts rehydrate"
   },
   "devDependencies": {
     "lefthook": "^2.1.4",

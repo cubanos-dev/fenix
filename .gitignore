@@ -57,6 +57,12 @@ test-results/
 # claude code
 .claude/settings.local.json
 
+# fenix loop — local-private read model rebuilt by `bun run fenix:rehydrate`
+.planning/fenix.db
+.planning/fenix.db-journal
+.planning/fenix.db-wal
+.planning/fenix.db-shm
+
 # typescript build cache
 *.tsbuildinfo
 
