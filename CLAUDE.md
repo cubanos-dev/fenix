@@ -29,17 +29,19 @@ Everything else is autonomous.
   MCP wiring based on opt-ins, scaffolds `apps/fenix` + `.planning/fenix.db`,
   makes the initial commit. After this, the loop is ready.
 
-- `/fenix-auto research` — Stage 1. Spawns 4 agents in parallel
-  (market-researcher, competitor-researcher, brand-agent,
-  features-synthesizer). Produces `.planning/research/{MARKET, COMPETITORS,
+- `/fenix-auto research` — Stage 1. Spawns three agents in parallel:
+  `fenix-researcher --target=market`, `fenix-researcher --target=competitors`,
+  and `fenix-brand-agent`. Then runs `fenix-features-synthesizer` once
+  all three return. Produces `.planning/research/{MARKET, COMPETITORS,
   BRAND}.md` + `.planning/research/shadcn-theme.css` (synced into
   `packages/ui/src/styles/globals.css`) + `.planning/FEATURES.md`. Halts
   with STOP-confirm in Fenix UI for user approval.
 
 - `/fenix-auto design <version>` — Stage 2. `mvp`, `v1`, `v2`, ... Spawns
-  design-planner (composes Pencil brief) → design-runner (invokes
-  `pencil` CLI to author `pens/<version>.pen`) → user reviews exports
-  in Fenix UI → on feedback, design-feedback iterates via `pencil --in`.
+  `fenix-design-planner` (composes Pencil brief) → `fenix-design-runner`
+  with `--mode=author` (mvp) or `--mode=iterate-from-prior` (vN+) → user
+  reviews exports in Fenix UI → on feedback, `fenix-design-runner` is
+  re-spawned with `--mode=feedback` to iterate via `pencil --in`.
   Versioning: `vN.pen` is always `git mv v(N-1).pen vN.pen` + iteration;
   lineage via `git log --follow`.
 
@@ -142,7 +144,7 @@ USER_IDEA.md
 fenix.config.ts            Profile, ports, dev-seed, gate flags, tolerances
 ```
 
-## The 16 agents
+## The 13 agents
 
 Each agent is defined at `.claude/agents/<name>.md` with frontmatter
 specifying model, tools, MCPs, permissions, allowed paths, timeout, and
@@ -154,10 +156,15 @@ spawns each as a fresh-context subagent via the Claude Code SDK.
   `fenix-design-planner`, `fenix-contract-author`, `fenix-checks-author`,
   `phase-reviewer`
 
-**Ten on Sonnet 4.6** (research + execution):
-- `fenix-init`, `fenix-market-researcher`, `fenix-competitor-researcher`,
-  `fenix-design-runner`, `fenix-design-feedback`, `fenix-tech-researcher`,
-  `fenix-phaser`, `fenix-builder`, `agent-browser-verify`, `fenix-publisher`
+**Seven on Sonnet 4.6** (research + execution):
+- `fenix-init`, `fenix-researcher` (parameterized via `--target=market|competitors`),
+  `fenix-design-runner` (parameterized via `--mode=author|iterate-from-prior|feedback`),
+  `fenix-tech-researcher`, `fenix-phaser`, `fenix-builder`, `agent-browser-verify`
+
+**Deterministic publish step** (no agent): `scripts/fenix-publish.ts`
+renders `COMPLETION.md` from the gate JSONs, commits `feat(<phase>):
+<goal>`, refreshes `fenix.db`, optionally opens a PR. The orchestrator
+performs lesson harvest inline after the script returns green.
 
 **Profile presets** (in `fenix.config.ts`): `quality` (all Opus), `balanced`
 (default — per the split above), `budget` (all Sonnet except `phase-reviewer`
@@ -231,12 +238,16 @@ VALIDATE  →  bun run phase:gate --phase <id>
                 runs bun run e2e --reporter=json, parses; verdict pass
                 requires all steps green AND zero console errors)
 
-PUBLISH  →  fenix-publisher (Sonnet)
-            Auto-generates COMPLETION.md with five tables (acceptance
-            traceability, visual fidelity, golden-path replay, non-happy
-            state coverage by category, edge cases). Commits feat(<phase-id>):
-            <feature goal>. Refreshes .planning/fenix.db. Optional
-            gh pr create.
+PUBLISH  →  bun run scripts/fenix-publish.ts --phase <id> [--pr]
+            Deterministic — no agent. Reads PLAN.md + every gate JSON,
+            renders COMPLETION.md (acceptance traceability, visual
+            fidelity, golden-path replay, non-happy state coverage,
+            edge cases), commits feat(<phase-id>): <feature goal>,
+            refreshes .planning/fenix.db. Defensively asserts
+            phase-reviewer.verdict == done AND agent-browser-verify.verdict
+            == pass before writing — script exits non-zero otherwise.
+            Lesson harvest runs inline in the orchestrator after the
+            script returns green.
 ```
 
 ## `packages/ui` — the single UI source

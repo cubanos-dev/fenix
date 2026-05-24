@@ -25,4 +25,4 @@ bun run pen:extract
 ## See also
 
 - `CLAUDE.md` § Source of Truth
-- `.claude/agents/fenix-design-planner.md`, `fenix-design-runner.md`, `fenix-design-feedback.md` — the agents that author and iterate pen files via the Pencil MCP
+- `.claude/agents/fenix-design-planner.md` (composes the brief) and `fenix-design-runner.md` (drives the Pencil CLI in `author` / `iterate-from-prior` / `feedback` modes) — the two agents that author and iterate pen files

@@ -31,6 +31,7 @@
     "fenix:phases": "bun .claude/scripts/fenix-auto.ts phases",
     "fenix:events": "bun .claude/scripts/fenix-auto.ts events",
     "fenix:rehydrate": "bun scripts/fenix-rehydrate.ts",
+    "fenix:publish": "bun scripts/fenix-publish.ts",
     "phase:gate": "bun scripts/phase-gate.ts",
     "phase:gate:coverage": "bun scripts/coverage-audit.ts",
     "phase:gate:visual": "bun scripts/visual-diff.ts",

@@ -662,13 +662,13 @@ function cmdDispatch(args: Argv): void {
   if (!sub) fail('usage: dispatch <research|design|tech|phases|build|status|feedback> [args…]')
   const hints: Record<string, string> = {
     research:
-      'Stage 1 — spawn fenix-market-researcher, fenix-competitor-researcher, fenix-brand-agent in parallel via the Task tool, then fenix-features-synthesizer once all three return. STOP-confirm: bun run fenix:check-approval --stage research.',
+      'Stage 1 — spawn fenix-researcher --target=market, fenix-researcher --target=competitors, fenix-brand-agent in parallel via the Task tool, then fenix-features-synthesizer once all three return. STOP-confirm: bun run fenix:check-approval --stage research.',
     design:
-      'Stage 2 — spawn fenix-design-planner, then fenix-design-runner for the given version. STOP-confirm per iteration: bun run fenix:check-approval --stage design:<version>.',
+      'Stage 2 — spawn fenix-design-planner, then fenix-design-runner with --mode=author (mvp) or --mode=iterate-from-prior (vN+) or --mode=feedback (FEEDBACK.md present). STOP-confirm per iteration: bun run fenix:check-approval --stage design:<version>.',
     tech: 'Stage 3 — spawn fenix-tech-researcher. STOP-confirm: bun run fenix:check-approval --stage tech.',
     phases: 'Stage 4 — spawn fenix-phaser for the given version.',
     build:
-      'Stage 5 miniLoopDEV — for each phase: fenix-contract-author → fenix-checks-author (pin commit) → fenix-builder (A/B/C) → bun run phase:gate → fenix-publisher.',
+      'Stage 5 miniLoopDEV — for each phase: fenix-contract-author → fenix-checks-author (pin commit) → fenix-builder (A/B/C) → bun run phase:gate → bun run scripts/fenix-publish.ts (deterministic; orchestrator does inline lesson harvest after).',
     status: 'See `bun .claude/scripts/fenix-auto.ts status`.',
     feedback: 'See `bun .claude/scripts/fenix-auto.ts feedback --version <v> --change "…"`.',
   }

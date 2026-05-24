@@ -40,11 +40,11 @@ feedback <args>                     pass-through to bun run fenix:feedback
 **Stage ordering check:** require `USER_IDEA.md` to exist and be non-template. If not, refuse with "run /fenix-init first".
 
 **Parallel work — spawn three subagents in a single message with three Task tool calls**:
-- `subagent_type="fenix-market-researcher"` → writes `.planning/research/MARKET.md`
-- `subagent_type="fenix-competitor-researcher"` → writes `.planning/research/COMPETITORS.md`
+- `subagent_type="fenix-researcher"` with prompt `--target=market` → writes `.planning/research/MARKET.md`
+- `subagent_type="fenix-researcher"` with prompt `--target=competitors` → writes `.planning/research/COMPETITORS.md`
 - `subagent_type="fenix-brand-agent"` → writes `BRAND.md` + `shadcn-theme.css` + syncs theme to `packages/ui/src/styles/globals.css`
 
-For each: pass a prompt like "Run per your agent definition; emit the JSON exit contract to stdout." Wait for all three to return.
+For each: pass the `--target=...` (or `--mode=...`) flag in the prompt followed by "Run per your agent definition; emit the JSON exit contract to stdout." Wait for all three to return.
 
 **Sequential synthesizer** — spawn `fenix-features-synthesizer` once the three above are green. It reads MARKET + COMPETITORS + BRAND and writes `.planning/FEATURES.md`.
 
@@ -71,12 +71,15 @@ bun run fenix:event research <agent-name>-completed --payload '<their JSON exit>
 
 **Subagent sequence:**
 1. `subagent_type="fenix-design-planner"` → writes `.planning/design/<version>-brief.md`.
-2. `subagent_type="fenix-design-runner"` → invokes the Pencil CLI to author/iterate the pen and export PNGs.
+2. `subagent_type="fenix-design-runner"` with **one** of these modes in the prompt:
+   - `--mode=author` for `version=mvp`
+   - `--mode=iterate-from-prior` for `version=vN` (N ≥ 1) on the first pass of that version
+   - `--mode=feedback` when pending feedback rows exist for this version (see Feedback loop below)
 3. **STOP-confirm**: tell the user where to look at exports (`pens/exports/<version>/`) and how to approve / give feedback:
    - Approve: `bun run fenix:approve --stage design:<version>`
    - Feedback: `bun run fenix:feedback --version <version> --change "…" --why "…"`
 
-**Feedback loop:** if `bun run fenix:status --json` shows pending feedback rows for this version on the next invocation, spawn `subagent_type="fenix-design-feedback"` with the feedback rows as context; it composes the iteration prompt and re-invokes the runner. Loop until approval lands.
+**Feedback loop:** if `bun run fenix:status --json` shows pending feedback rows for this version on the next invocation, materialize them into `FEEDBACK.md` at repo root (one block per pending row in the schema the agent expects), then spawn `subagent_type="fenix-design-runner"` with `--mode=feedback`. Loop until approval lands.
 
 **On approval:** record version row, commit pen state with `feat(design): <version> approved by user`, append event `design <version>-approved`.
 
@@ -163,12 +166,17 @@ Until Stream D ships `phase:gate`, you can call the individual gate scripts dire
 
 ```
 bun run fenix:phase-update --id <phase> --status publish
+bun run scripts/fenix-publish.ts --phase <phase> [--pr]
 ```
-Spawn `subagent_type="fenix-publisher"`. It generates `COMPLETION.md` with the five tables (acceptance traceability, visual fidelity, golden-path replay, non-happy state coverage, edge cases), commits `feat(<phase>): <one-line goal>`, optionally opens a PR via `gh pr create`. On success:
+
+`fenix-publish.ts` is deterministic — no subagent. It reads PLAN.md + every gate JSON, renders `COMPLETION.md`, commits `feat(<phase>): <goal>`, refreshes `.planning/fenix.db`, and (with `--pr`) opens a PR. It defensively asserts `phase-reviewer.verdict == done` and `agent-browser-verify.verdict == pass` before writing — if either is missing or red, it exits non-zero, which means the gate stack let you through when it shouldn't have. On success, parse its JSON to stdout, then:
+
 ```
 bun run fenix:phase-update --id <phase> --status green --finished
 bun run fenix:event build phase-green --phase <phase> --payload '<JSON>'
 ```
+
+**Lesson harvest (inline — replaces the prior publisher's reasoning step):** before announcing the phase green, scan `.planning/phases/<phase>/.artifacts/*.json` for non-obvious takeaways — phase-reviewer rejection rationales, gates that flipped fail→pass across builder retries, recurring user feedback. For each genuine lesson (default: zero), call `bun .claude/scripts/fenix-auto.ts lessons-propose --scope <agent:|gate:|stage:|loop> --category <state-coverage|tolerance|slop|pattern|quality|feedback-fit|infra> --severity <one-off|recurring|pattern> --title "…" --phase <phase> --evidence <path> --body-file /tmp/lesson-body.md`. Quality beats quantity — file nothing if nothing stood out. Surface proposed lessons in your stdout summary; promotion to `applied` is a human review step.
 
 ### Multi-phase `--auto` handoff
 
