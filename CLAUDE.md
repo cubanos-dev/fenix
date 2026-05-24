@@ -22,12 +22,28 @@ The user does **five** things: writes USER_IDEA via `/fenix-init`, reviews
 research artifacts, approves pens, reviews tech picks, reviews the PR.
 Everything else is autonomous.
 
+### Starting a new project from this template
+
+```bash
+bun create cubanos-dev/fenix my-project
+cd my-project
+```
+
+`bun create` clones the template, runs `bun install`, then runs
+`scripts/init-project.ts` (wired via `bun-create.postinstall` in
+`package.json`). The script resets `.git` history, drops fenix-source-
+only artifacts (`docs/PRODUCT.md`, `.claude/plans`), makes the first
+clean commit, and prints next steps. Open the new directory in Claude
+Code and run `/fenix-init` to walk the seven setup questions.
+
 ### Commands
 
-- `/fenix-init` — interactive scaffolder. Walks 7 questions → writes
-  `USER_IDEA.md`, renames `@fenix/*` packages to `@<project>/*`, configures
-  MCP wiring based on opt-ins, scaffolds `apps/fenix` + `.planning/fenix.db`,
-  makes the initial commit. After this, the loop is ready.
+- `/fenix-init` — interactive scaffolder, run **inside** the cloned
+  project. Walks 7 questions → writes `USER_IDEA.md`, renames `@fenix/*`
+  packages to `@<project>/*`, installs the `pbakaus/impeccable` skill,
+  configures MCP wiring based on opt-ins, scaffolds `apps/fenix` +
+  `.planning/fenix.db`, makes the second commit. After this, the loop
+  is ready.
 
 - `/fenix-auto research` — Stage 1. Spawns three agents in parallel:
   `fenix-researcher --target=market`, `fenix-researcher --target=competitors`,

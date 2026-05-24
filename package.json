@@ -5,6 +5,9 @@
   "engines": {
     "node": "26.x"
   },
+  "bun-create": {
+    "postinstall": "bun scripts/init-project.ts --skip-install"
+  },
   "workspaces": ["apps/*", "packages/*", "packages/config/*"],
   "scripts": {
     "dev": "turbo dev",
