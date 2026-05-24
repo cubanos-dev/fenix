@@ -1,5 +1,5 @@
 import Link from 'next/link'
-import { EmptyState } from '@/app/_components/empty-state'
+import { EmptyState } from '@/components/empty-state'
 import { cn } from '@/lib/cn'
 import { readFeaturesDoc, readResearchDoc } from '@/lib/project'
 

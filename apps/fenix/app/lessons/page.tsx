@@ -1,7 +1,7 @@
 import { existsSync, readFileSync } from 'node:fs'
 import { resolve } from 'node:path'
 import Link from 'next/link'
-import { EmptyState } from '@/app/_components/empty-state'
+import { EmptyState } from '@/components/empty-state'
 import { cn } from '@/lib/cn'
 import { relativeTime } from '@/lib/format'
 import { listLessons } from '@/lib/queries'

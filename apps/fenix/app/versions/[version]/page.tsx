@@ -1,6 +1,6 @@
 import Link from 'next/link'
 import { notFound } from 'next/navigation'
-import { EmptyState } from '@/app/_components/empty-state'
+import { EmptyState } from '@/components/empty-state'
 import { relativeTime } from '@/lib/format'
 import { listPenExports } from '@/lib/project'
 import { listPendingFeedback, listPhases, listVersions } from '@/lib/queries'

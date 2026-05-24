@@ -1,10 +1,10 @@
 import Link from 'next/link'
+import { EmptyState } from '@/components/empty-state'
+import { MetricStrip } from '@/components/metric-strip'
 import { cn } from '@/lib/cn'
 import { relativeTime, statusTone } from '@/lib/format'
 import { getProjectIdentity } from '@/lib/project'
 import { getOverview, listPhases, listVersions } from '@/lib/queries'
-import { EmptyState } from './_components/empty-state'
-import { MetricStrip } from './_components/metric-strip'
 
 export const dynamic = 'force-dynamic'
 
