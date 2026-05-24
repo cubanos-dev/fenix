@@ -39,10 +39,18 @@ feedback <args>                     pass-through to bun run fenix:feedback
 
 **Stage ordering check:** require `USER_IDEA.md` to exist and be non-template. If not, refuse with "run /fenix-init first".
 
+**Pre-flight: ensure `.impeccable.md` exists.** The brand-agent halts without it. Check:
+
+1. If `.impeccable.md` exists at repo root, proceed.
+2. Else if `docs/PRODUCT.md` exists and is non-template, invoke the impeccable skill: `Skill(skill="impeccable", args="teach")`. This reads `docs/PRODUCT.md` and produces `.impeccable.md`. Commit it: `chore(design): teach impeccable from PRODUCT.md`.
+3. Else refuse: "Fill `docs/PRODUCT.md` (brand voice, audience, aesthetic direction, anti-references) before running `/fenix-auto research`. The design pipeline needs an explicit taste contract."
+
+If the `impeccable` skill itself isn't installed, refuse with: "Run `claude skills install pbakaus/impeccable` first (fenix-init was supposed to handle this — check the `impeccable_installed` field in the last init JSON)."
+
 **Parallel work — spawn three subagents in a single message with three Task tool calls**:
 - `subagent_type="fenix-researcher"` with prompt `--target=market` → writes `.planning/research/MARKET.md`
 - `subagent_type="fenix-researcher"` with prompt `--target=competitors` → writes `.planning/research/COMPETITORS.md`
-- `subagent_type="fenix-brand-agent"` → writes `BRAND.md` + `shadcn-theme.css` + syncs theme to `packages/ui/src/styles/globals.css`
+- `subagent_type="fenix-brand-agent"` → reads `.impeccable.md`, writes `BRAND.md` + `shadcn-theme.css`, runs impeccable `audit`/`critique`, syncs theme to `packages/ui/src/styles/globals.css`
 
 For each: pass the `--target=...` (or `--mode=...`) flag in the prompt followed by "Run per your agent definition; emit the JSON exit contract to stdout." Wait for all three to return.
 

@@ -91,6 +91,7 @@ directory name. Milestones = git tags. Git history is the handoff.
 - **Email:** Resend + React Email
 - **Storage:** Cloudflare R2 via S3 SDK
 - **UI:** shadcn/ui + Tailwind v4 + Geist (lives in **`packages/ui`** — single source)
+- **Design taste (anti-slop):** `impeccable` skill (`pbakaus/impeccable`) — installed by `fenix-init`, taught from `docs/PRODUCT.md` at the start of Stage 1. `brand-agent` and `design-planner` both halt if `.impeccable.md` is missing; both call `Skill(skill="impeccable", args="audit|critique <file>")` before exit. The slop catalog lives in the skill, not duplicated into agent prompts.
 - **i18n:** next-intl (en-US, es-ES)
 - **Testing:** Vitest + Storybook 10 + Playwright + axe a11y
 - **Browser-drive (agent):** `@playwright/mcp`

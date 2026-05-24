@@ -35,7 +35,8 @@ Walk the user through the seven structured questions below using `AskUserQuestio
    - Conditional: add Stripe MCP only if payments opted-in; add AI Gateway MCP only if LLM opted-in; add Sentry + PostHog MCPs only if those MCPs exist (check `npm view <pkg> versions` via `Bash`; skip if not published).
 5. **Verify** `apps/fenix/` already exists (it ships with the template) and that its `package.json` was correctly renamed by step 2. Do not re-scaffold it. If for some reason the directory is missing (manual deletion, partial clone), halt with `apps/fenix missing — re-clone the template`.
 6. Create empty `.planning/fenix.db` by running `bun run fenix:init-db` (the pre-flight in `/fenix-init` may have done this already; the script is idempotent).
-7. Initial commit: `chore: init <project-name> via fenix` (Conventional Commits scope = project name).
+7. **Install the `impeccable` skill** (Fenix's design taste contract — the brand-agent and design-planner will halt without it). Run `claude skills install pbakaus/impeccable` via `Bash`. If install fails (no internet, marketplace 4xx, etc.), proceed with the rest of init but include `impeccable_installed: false` in the exit JSON and surface a one-line warning telling the user to install it manually before running `/fenix-auto research`. Do **not** run `/impeccable teach` here — that step belongs after `docs/PRODUCT.md` is filled by the user, which happens between init and research.
+8. Initial commit: `chore: init <project-name> via fenix` (Conventional Commits scope = project name).
 
 # Behavior rules
 
@@ -55,6 +56,7 @@ On success, emit a single JSON block to stdout:
   "project_name": "<name>",
   "user_idea_path": "USER_IDEA.md",
   "opt_ins": { "payments": true|false, "llm": true|false, "geocoding": true|false },
+  "impeccable_installed": true|false,
   "next_command": "/fenix-auto research"
 }
 ```

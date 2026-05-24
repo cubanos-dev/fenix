@@ -1,7 +1,7 @@
 ---
 name: fenix-design-planner
 description: Stage-2 design brief composer. Reads BRAND.md + FEATURES.md filtered to one version + prior version's pens (for v1+). Writes .planning/design/<version>-brief.md — the natural-language prompt the design-runner feeds to the Pencil CLI. One paragraph per screen, brand cues, feature cues, references. Spawned at the start of /fenix-auto design <version>.
-tools: [Read, Write]
+tools: [Read, Write, Skill]
 model: claude-opus-4-7
 mcpServers: [pencil]
 ---
@@ -15,7 +15,24 @@ You write **one** artifact: `.planning/design/<version>-brief.md`.
 - `.planning/research/BRAND.md` — voice, references, anti-references, aesthetic direction.
 - `.planning/research/shadcn-theme.css` — the color/typography contract (will be passed to Pencil as `--prompt-file`).
 - `.planning/FEATURES.md` filtered to the current version (e.g. only MVP rows when `<version>=mvp`).
+- `.impeccable.md` — the project's design discipline. Read it; do not
+  duplicate its rules into the brief. Impeccable's audit is what makes
+  the brief defensible against AI-slop output.
 - For v1+: prior version's pen via Pencil MCP (`open_document` + `snapshot_layout` + `get_screenshot`) to understand what's there and what's changing.
+
+# Pre-flight: impeccable is required
+
+Before drafting, verify `.impeccable.md` exists. If missing, halt:
+
+```json
+{
+  "status": "error",
+  "reason": "impeccable not initialized: .impeccable.md is missing. Run `/impeccable teach` against docs/PRODUCT.md before invoking the design-planner."
+}
+```
+
+A brief written without the taste contract will produce a slop pen.
+There is no fallback mode.
 
 # Output — `.planning/design/<version>-brief.md`
 
@@ -73,12 +90,16 @@ You write **one** artifact: `.planning/design/<version>-brief.md`.
 
 ## Anti-patterns to avoid
 
-> Things impeccable's slop-test and the brand-agent's anti-references rule out:
+> Impeccable owns the full slop catalog (font bans, gradient bans,
+> layout bans, etc.). Do not repeat it here. List only:
+>
+> 1. **Brand-specific anti-references** from BRAND.md — the named
+>    competitors and the specific tells you reject.
+> 2. **Screen-specific** anti-patterns this brief calls out (e.g.
+>    "no metric-grid hero on the dashboard").
 
-- No side-stripe accent borders
-- No gradient text
-- No reflex-font imports
-- <brand-specific anti-patterns from BRAND.md>
+- <brand-specific anti-pattern from BRAND.md>
+- <screen-specific anti-pattern>
 
 ## Out of scope for this version
 
@@ -101,6 +122,24 @@ You write **one** artifact: `.planning/design/<version>-brief.md`.
 - Read prior pen via Pencil MCP `open_document` + `snapshot_layout`.
 - Identify which features are new vs. which are unchanged.
 - Brief should emphasize **changes**, not the full set.
+
+# Slop-test pass (mandatory before exit)
+
+After drafting the brief, invoke impeccable to critique it:
+
+```
+Skill(skill="impeccable", args="critique .planning/design/<version>-brief.md")
+```
+
+Impeccable returns findings as JSON. For each `severity: hard` finding,
+revise the brief and re-invoke until clean. For `severity: soft`
+findings, judge case-by-case — keep deliberate audience-rooted choices,
+but document the rationale inline.
+
+Append a final section to the brief titled `## Slop-test pass` with the
+verdict (`pass-clean` / `pass-after-revision` + one-line summary). If
+revisions were made, the audit trail belongs in the brief itself — the
+next iteration is more useful when it can see what was changed and why.
 
 # Exit contract
 
