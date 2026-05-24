@@ -25,4 +25,4 @@ bun run pen:extract
 ## See also
 
 - `CLAUDE.md` § Source of Truth
-- `.claude/skills/fenix-design/` — the Pencil MCP skill used by GSD agents
+- `.claude/agents/fenix-design-planner.md`, `fenix-design-runner.md`, `fenix-design-feedback.md` — the agents that author and iterate pen files via the Pencil MCP

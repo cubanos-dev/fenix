@@ -369,8 +369,6 @@ Phases number features within a milestone, not releases. A phase like
 These are **removed** from Fenix. If you encounter references in a fork,
 delete them on sight:
 
-- GSD (Get Shit Done) workflow — replaced by `/fenix-auto`.
-- `/gsd:*` slash commands.
 - `STATE.md`, `ROADMAP.md`, `REQUIREMENTS.md`, `MILESTONES.md`,
   `HANDOFF.json`, `.continue-here.md`, `.planning/config.json`.
 - `/phase-start`, `/phase-spec`, `/phase-close` user commands (the

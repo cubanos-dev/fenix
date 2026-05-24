@@ -2,7 +2,7 @@
 
 > **This is a template.** Fill every section. Delete the italic guidance. A PRODUCT.md with hand-waves in it will produce a generic design — which is the failure mode this entire workflow exists to prevent.
 >
-> This file is read by `/impeccable teach` to produce `.impeccable.md` non-interactively, and by `/gsd:new-project` to seed `.planning/PROJECT.md`. It is the single upstream source of product intent.
+> This file is read by `/impeccable teach` to produce `.impeccable.md` non-interactively, and by `/fenix-auto research` to seed `.planning/FEATURES.md`. It is the single upstream source of product intent.
 
 ## 1. Problem & Vision
 

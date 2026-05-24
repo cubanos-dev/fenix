@@ -1,8 +1,8 @@
 # [Feature Name] — Feature PRD
 
-> **This is a template.** Copy to `docs/features/<feature-kebab-name>.md` and fill every section. Delete the italic guidance. Thin PRDs force `/gsd:discuss-phase` to interrogate the human — rich PRDs let planning run non-interactively.
+> **This is a template.** Copy to `docs/features/<feature-kebab-name>.md` and fill every section. Delete the italic guidance. Thin PRDs force the `fenix-contract-author` agent to halt and interrogate the human — rich PRDs let planning run non-interactively.
 >
-> This file is read by `/gsd:discuss-phase` and `/gsd:plan-phase` when scoping any phase that touches this feature. Multiple phases may share one feature PRD.
+> This file is read by the `fenix-phaser` agent during `/fenix-auto phases <version>` and by the `fenix-contract-author` agent during `/fenix-auto build <phase>` when scoping any phase that touches this feature. Multiple phases may share one feature PRD.
 
 ## 1. Summary
 

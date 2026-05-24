@@ -1,6 +1,6 @@
 # docs/ — Product Requirements
 
-This directory is the **upstream source of product truth** for a Fenix project. It is the one place where the *what* and the *why* of the product are written in prose — everything downstream (pen designs, GSD requirements, phase plans, impeccable design context) synthesizes from here.
+This directory is the **upstream source of product truth** for a Fenix project. It is the one place where the *what* and the *why* of the product are written in prose — everything downstream (pen designs, `.planning/FEATURES.md`, per-phase plans, impeccable design context) synthesizes from here.
 
 ## Layout
 
@@ -16,7 +16,7 @@ docs/
 ## Writing order
 
 1. **Fill `PRODUCT.md` first.** It carries the brand and aesthetic context every feature inherits. `/impeccable teach` reads only this file to produce `.impeccable.md`.
-2. **Write one feature PRD per bounded slice of product.** Copy `features/_template.md` and rename. Each feature is a candidate for a GSD phase — or a cluster of phases if the feature is large.
+2. **Write one feature PRD per bounded slice of product.** Copy `features/_template.md` and rename. Each feature is a candidate for a Fenix phase — or a cluster of phases if the feature is large.
 3. **Rewrite, do not grow.** PRDs are living documents. When scope changes, edit the PRD before editing code or pens. If the PRD and the code disagree, the PRD is wrong or the code is wrong — never both.
 
 ## Who reads these files
@@ -24,9 +24,9 @@ docs/
 | Consumer | Reads | Writes |
 |---|---|---|
 | `/impeccable teach` (skill) | `PRODUCT.md` | `.impeccable.md` |
-| `/gsd:new-project` | `PRODUCT.md` + `features/*.md` | `.planning/PROJECT.md`, `.planning/REQUIREMENTS.md` |
-| `/gsd:discuss-phase` | the feature PRD(s) in scope | phase context |
-| `/gsd:plan-phase` | the feature PRD(s) in scope | `.planning/phases/<id>/PLAN.md` |
+| `/fenix-auto research` (features-synthesizer agent) | `PRODUCT.md` + `features/*.md` | `.planning/FEATURES.md` |
+| `/fenix-auto phases <version>` (phaser agent) | the feature PRD(s) in scope | `.planning/phases/<NN-slug>/PLAN.md` |
+| `/fenix-auto build <phase>` (contract-author agent) | the feature PRD(s) in scope | phase contract inside `PLAN.md` |
 | Humans authoring pens | the feature PRD(s) in scope | `pens/` |
 
 ## Rules
