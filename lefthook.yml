@@ -34,28 +34,6 @@ pre-commit:
           exit 1
         fi
 
-    # React Compiler memoizes automatically — manual memoization is
-    # redundant and a smell. Block useMemo / useCallback / React.memo /
-    # memo() from landing. Opt a single file out with 'use no memo'.
-    - name: no-manual-memo
-      glob: "{apps,packages}/**/*.{ts,tsx}"
-      run: |
-        fail=0
-        # Call sites: useMemo(...), useCallback(...), React.memo(...), etc.
-        if grep -nHE '\b(useMemo|useCallback)\s*\(|\bReact\.(memo|useMemo|useCallback)\s*\(' {staged_files} ; then
-          fail=1
-        fi
-        # `import { ..., memo, ... } from 'react'` on a single line.
-        if grep -nHE "import[^;]*\{[^}]*\bmemo\b[^}]*\}[^;]*from[^;]*['\"]react['\"]" {staged_files} ; then
-          fail=1
-        fi
-        if [ $fail -eq 1 ]; then
-          echo
-          echo "✗ no-manual-memo: React Compiler memoizes automatically — remove useMemo / useCallback / memo / React.memo."
-          echo "  To opt a single file out of the compiler, add \`'use no memo'\` as the first directive at the top."
-          exit 1
-        fi
-
     - name: biome
       run: bunx turbo lint
 

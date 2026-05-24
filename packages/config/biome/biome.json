@@ -18,7 +18,18 @@
       "recommended": true,
       "style": {
         "noNonNullAssertion": "warn",
-        "useImportType": "error"
+        "useImportType": "error",
+        "noRestrictedImports": {
+          "level": "error",
+          "options": {
+            "paths": {
+              "react": {
+                "importNames": ["memo", "useMemo", "useCallback"],
+                "message": "React Compiler memoizes automatically — drop manual memoization. Opt out a single file with `'use no memo'` at the top."
+              }
+            }
+          }
+        }
       },
       "suspicious": {
         "noExplicitAny": "warn"

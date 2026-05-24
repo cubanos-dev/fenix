@@ -282,7 +282,9 @@ hook return values at build time. This is non-negotiable for agents:
 
 - **Never** add `useMemo`, `useCallback`, or `memo` / `React.memo`. The
   compiler handles this. Manual memoization is redundant under the
-  compiler and is rejected at pre-commit by the `no-manual-memo` hook.
+  compiler and is rejected by the `noRestrictedImports` Biome rule in
+  `@fenix/biome-config` (so you'll see it in your editor, at `bun run
+  lint`, and at the `biome` pre-commit job — three layers, one source).
 - Write idiomatic React: pure render functions, no mutation of props or
   state inline, no `setState` during render. The compiler relies on the
   Rules of React being followed; violating them produces wrong output,
