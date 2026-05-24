@@ -112,19 +112,23 @@ export function listGatesForPhase(phaseId: string): Gate[] {
 export function listEvents(opts: { phase?: string; limit?: number; sinceId?: number } = {}): FenixEvent[] {
   const db = readDb()
   if (!db) return []
+  // ORDER BY id ASC so SSE consumers advancing sinceId to MAX(returned)
+  // never skip the oldest rows in a burst that exceeds `limit`. The next
+  // tick picks up the gap because sinceId only moved as far as the last
+  // emitted row.
   const limit = Math.max(1, Math.min(500, opts.limit ?? 50))
   if (opts.phase != null) {
     return db
       .prepare(
         `SELECT id, ts, stage, phase_id, kind, payload_json FROM events
-         WHERE phase_id = ? AND id > ? ORDER BY id DESC LIMIT ?`,
+         WHERE phase_id = ? AND id > ? ORDER BY id ASC LIMIT ?`,
       )
       .all(opts.phase, opts.sinceId ?? 0, limit) as FenixEvent[]
   }
   return db
     .prepare(
       `SELECT id, ts, stage, phase_id, kind, payload_json FROM events
-       WHERE id > ? ORDER BY id DESC LIMIT ?`,
+       WHERE id > ? ORDER BY id ASC LIMIT ?`,
     )
     .all(opts.sinceId ?? 0, limit) as FenixEvent[]
 }
@@ -238,6 +242,9 @@ export interface Overview {
   phasesGreen: number
   phasesHalted: number
   phasesInFlight: number
+  /** Distinct stages with at least one approval row (research, tech, design:<v>, …). */
+  totalApprovals: number
+  /** Required stages not yet approved — derived from versions + ['research','tech']. */
   pendingApprovals: number
   pendingFeedback: number
   latestEvent: FenixEvent | null
@@ -254,6 +261,7 @@ export function getOverview(): Overview {
       phasesGreen: 0,
       phasesHalted: 0,
       phasesInFlight: 0,
+      totalApprovals: 0,
       pendingApprovals: 0,
       pendingFeedback: 0,
       latestEvent: null,
@@ -271,7 +279,18 @@ export function getOverview(): Overview {
        FROM phases`,
     )
     .get() as { total: number; green: number; halted: number; in_flight: number }
-  const pendingApprovals = (db.prepare(`SELECT COUNT(*) AS n FROM approvals`).get() as { n: number }).n ?? 0
+  const totalApprovals = (db.prepare(`SELECT COUNT(*) AS n FROM approvals`).get() as { n: number }).n ?? 0
+  // Required stage set is derived from on-disk state: 'research' + 'tech' are
+  // always required; 'design:<v>' is required for every version row.
+  const versionNames = (db.prepare(`SELECT name FROM versions ORDER BY name`).all() as Array<{ name: string }>).map(
+    (v) => v.name,
+  )
+  const requiredStages = new Set<string>(['research', 'tech', ...versionNames.map((v) => `design:${v}`)])
+  const approvedStages = new Set(
+    (db.prepare(`SELECT stage FROM approvals`).all() as Array<{ stage: string }>).map((r) => r.stage),
+  )
+  let pendingApprovals = 0
+  for (const s of requiredStages) if (!approvedStages.has(s)) pendingApprovals++
   const pendingFeedback =
     (
       db.prepare(`SELECT COUNT(*) AS n FROM feedback WHERE applied = 0`).get() as {
@@ -289,6 +308,7 @@ export function getOverview(): Overview {
     phasesGreen: phaseStats.green ?? 0,
     phasesHalted: phaseStats.halted ?? 0,
     phasesInFlight: phaseStats.in_flight ?? 0,
+    totalApprovals,
     pendingApprovals,
     pendingFeedback,
     latestEvent,

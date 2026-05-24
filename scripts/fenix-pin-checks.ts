@@ -46,9 +46,12 @@ function gitOutput(args: string[]): string {
 }
 
 function pinnedFilesFor(sha: string): Set<string> {
-  // The CHECKS commit is the pinning commit. Its diff vs its parent IS the
-  // pinned set: only files that exist in this commit (and were touched by it).
-  const out = gitOutput(['diff', `${sha}^`, sha, '--name-only'])
+  // The CHECKS commit is the pinning commit. Its tree-diff vs its parent IS
+  // the pinned set: only files that exist in this commit (and were touched
+  // by it). `git diff-tree` handles the root-commit case (no parent) — using
+  // `git diff <sha>^ <sha>` would fail with "ambiguous argument" and lock
+  // every subsequent commit behind --no-verify.
+  const out = gitOutput(['diff-tree', '--no-commit-id', '--name-only', '-r', sha])
   const files = new Set<string>()
   for (const line of out.split('\n')) {
     const trimmed = line.trim()

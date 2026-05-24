@@ -31,15 +31,23 @@ interface GateSpec {
   command?: string[]
 }
 
+// Canonical gate names use colon-form for multi-word gates (matches
+// CLAUDE.md, db.ts schema comment, lessons.ts scope convention). Single-word
+// gates and agent-named deferred gates stay bare. writeGateArtifact and
+// gateArtifactPath sanitize `:` → `-` for filesystem-safe artifact paths,
+// so on-disk filenames remain `pattern-audit.json` etc.
 const GATE_STACK: GateSpec[] = [
   {
-    name: 'pattern-audit',
-    hard: false,
+    // Hard-capable: file-naming + override-dir + per-app-globals findings are
+    // soft, but import-graph boundary violations (added back from the deleted
+    // boundaries.mjs) write verdict='fail' and the script exits non-zero.
+    name: 'pattern:audit',
+    hard: true,
     kind: 'script',
     command: ['bun', 'scripts/pattern-audit.ts', '--phase'],
   },
   {
-    name: 'coverage-audit',
+    name: 'coverage:audit',
     hard: true,
     kind: 'script',
     command: ['bun', 'scripts/coverage-audit.ts', '--phase'],
@@ -51,20 +59,23 @@ const GATE_STACK: GateSpec[] = [
     command: ['bun', 'run', 'validate'],
   },
   {
-    name: 'pen-drift',
+    name: 'pen:drift',
     hard: true,
     kind: 'script',
     command: ['bun', 'scripts/pen-drift-check.ts', '--phase'],
   },
   {
-    name: 'visual-diff',
+    name: 'visual:diff',
     hard: true,
     kind: 'script',
     command: ['bun', 'scripts/visual-diff.ts', '--phase'],
   },
   {
-    name: 'slop-test',
-    hard: false,
+    // Hard-capable: hygiene findings (TODO, console.log, no-any) stay soft,
+    // but the IMPECCABLE rules (side-stripe, gradient-text, reflex-font)
+    // write verdict='fail' and the script exits non-zero.
+    name: 'slop:test',
+    hard: true,
     kind: 'script',
     command: ['bun', 'scripts/slop-test.ts', '--phase'],
   },

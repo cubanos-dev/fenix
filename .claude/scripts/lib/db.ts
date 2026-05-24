@@ -80,7 +80,7 @@ CREATE INDEX IF NOT EXISTS idx_phases_version ON phases(version);
 
 CREATE TABLE IF NOT EXISTS gates (
   phase_id   TEXT NOT NULL,
-  gate_name  TEXT NOT NULL,              -- pattern:audit | coverage:audit | validate | pen:drift | visual:diff | slop:test | phase-reviewer | agent-browser-verify
+  gate_name  TEXT NOT NULL,              -- canonical colon-form: pattern:audit | coverage:audit | validate | pen:drift | visual:diff | slop:test | phase-reviewer | agent-browser-verify (writeGateArtifact sanitizes ':'→'-' for on-disk filenames)
   status     TEXT NOT NULL,              -- see GateStatus
   json_path  TEXT,
   ran_at     INTEGER NOT NULL,
@@ -172,13 +172,28 @@ export function recordApproval(
   payloadId: string,
   signer: string | null,
 ): void {
+  const now = Date.now()
   db.prepare(
     `INSERT INTO approvals (stage, payload_id, approved_at, signer)
      VALUES (?, ?, ?, ?)
      ON CONFLICT(stage, payload_id) DO UPDATE
        SET approved_at = excluded.approved_at,
            signer      = excluded.signer`,
-  ).run(stage, payloadId, Date.now(), signer)
+  ).run(stage, payloadId, now, signer)
+
+  // Mirror approval onto the entity it gates so the UI doesn't need to JOIN.
+  // - `design:<version>` advances `versions.status` from planned → approved.
+  //   Subsequent stage transitions (building, green) live elsewhere (rehydrate
+  //   reads PLAN.md status; phase publisher flips to 'green').
+  const designMatch = /^design:(.+)$/.exec(stage)
+  if (designMatch) {
+    db.prepare(
+      `UPDATE versions
+         SET status = CASE WHEN status IN ('planned','designing') THEN 'approved' ELSE status END,
+             approved_at = ?
+       WHERE name = ?`,
+    ).run(now, designMatch[1])
+  }
 }
 
 export function hasApproval(

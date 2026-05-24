@@ -98,11 +98,29 @@ function listRoutes(repoRoot: string): string[] {
 function routeToPath(routeFile: string): string {
   // apps/app/app/(dash)/billing/page.tsx → /billing
   // apps/app/app/api/users/route.ts        → /api/users
+  // apps/app/app/users/[id]/page.tsx       → /users/[id]   (kept literal here;
+  //   routeToMatcher converts [param] to a regex placeholder for spec matching)
   const after = routeFile.replace(/^apps\/[^/]+\/app/, '')
   return after
     .replace(/\/(page|route)\.tsx?$/, '')
     .replace(/\/\([^)]+\)/g, '') // route groups
     .replace(/^$/, '/')
+}
+
+function escapeRegex(s: string): string {
+  return s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
+}
+
+function routeToMatcher(routePath: string): RegExp {
+  // Convert `/users/[id]/posts/[postId]` → /\/users\/[^/]+\/posts\/[^/]+/.
+  // Specs typically call `page.goto('/users/123/posts/abc')` which would
+  // never literally contain '/users/[id]'; this matcher catches the real
+  // calls without falling back to fragile substring search.
+  if (routePath === '/') return /['"`]\/['"`]/
+  const escaped = escapeRegex(routePath)
+    // Re-open the escaped brackets and replace [name] with a non-slash group.
+    .replace(/\\\[[^\\\]]+\\\]/g, '[^/]+')
+  return new RegExp(escaped)
 }
 
 function listE2ESpecs(repoRoot: string): string[] {
@@ -175,14 +193,13 @@ function main(): number {
   const missingRoutes: Array<{ route: string; reason: string }> = []
   const coveredRoutes: string[] = []
   for (const { file, path } of routePaths) {
-    const referenced = [...specBodies.values()].some((body) =>
-      body.includes(path === '/' ? "'/'" : path),
-    )
+    const matcher = routeToMatcher(path)
+    const referenced = [...specBodies.values()].some((body) => matcher.test(body))
     if (referenced) coveredRoutes.push(file)
     else
       missingRoutes.push({
         route: file,
-        reason: `no E2E spec under apps/*/e2e/ references "${path}"`,
+        reason: `no E2E spec under apps/*/e2e/ matches "${path}" (pattern: ${matcher.source})`,
       })
   }
 
@@ -240,7 +257,7 @@ function main(): number {
 
   const { path } = writeGateArtifact({
     phase,
-    gate: 'coverage-audit',
+    gate: 'coverage:audit',
     verdict,
     hard: true,
     startedAt,
@@ -249,7 +266,7 @@ function main(): number {
   })
 
   process.stdout.write(
-    `coverage-audit: ${verdict} (${reasons.length} reason${reasons.length === 1 ? '' : 's'}) → ${relative(repoRoot, path)}\n`,
+    `coverage:audit: ${verdict} (${reasons.length} reason${reasons.length === 1 ? '' : 's'}) → ${relative(repoRoot, path)}\n`,
   )
   for (const r of reasons) process.stdout.write(`  • ${r}\n`)
 

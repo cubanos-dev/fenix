@@ -174,7 +174,7 @@ function main(): number {
 
   const { path } = writeGateArtifact({
     phase,
-    gate: 'pen-drift',
+    gate: 'pen:drift',
     verdict,
     hard: true,
     startedAt,
@@ -182,7 +182,7 @@ function main(): number {
     details: { refs, accepted_drifts: acceptedDrifts },
   })
 
-  process.stdout.write(`pen-drift: ${verdict} → ${relative(repoRoot, path)}\n`)
+  process.stdout.write(`pen:drift: ${verdict} → ${relative(repoRoot, path)}\n`)
   for (const r of reasons) process.stdout.write(`  • ${r}\n`)
 
   return verdictExitCode(verdict, true)

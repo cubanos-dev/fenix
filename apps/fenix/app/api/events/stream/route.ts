@@ -9,7 +9,7 @@
  * subscribe and the server doesn't leak read handles.
  */
 
-import { type FenixEvent, listEvents } from '@/lib/queries'
+import { listEvents } from '@/lib/queries'
 
 // We rely on the default Next runtime — under `bun --bun next dev` this is
 // Bun, which can resolve `bun:sqlite`. Pinning to 'nodejs' would break the
@@ -22,38 +22,56 @@ export async function GET(req: Request): Promise<Response> {
 
   const POLL_MS = 1000
   const MAX_IDLE_MS = 5 * 60_000
+  // listEvents caps internally at 500; raising this past the burst budget
+  // (one full gate run emits ~16 rows; pick a comfortable margin) prevents
+  // truncation. The next-tick safety remains because we order ASC.
+  const BURST_LIMIT = 500
 
   const encoder = new TextEncoder()
   let lastEventTs = Date.now()
+  let closed = false
 
   const stream = new ReadableStream({
     async start(controller) {
-      const enqueue = (event: string, data: string) => {
-        controller.enqueue(encoder.encode(`event: ${event}\ndata: ${data}\n\n`))
+      const safeEnqueue = (chunk: Uint8Array): boolean => {
+        if (closed) return false
+        try {
+          controller.enqueue(chunk)
+          return true
+        } catch {
+          closed = true
+          return false
+        }
       }
-      enqueue('hello', JSON.stringify({ phase, sinceId, ts: Date.now() }))
+      const emit = (event: string, data: string) => safeEnqueue(encoder.encode(`event: ${event}\ndata: ${data}\n\n`))
+      emit('hello', JSON.stringify({ phase, sinceId, ts: Date.now() }))
 
       const tick = async () => {
+        if (closed) return
         try {
-          const rows = listEvents({ phase, limit: 50, sinceId })
-            // listEvents returns descending; SSE consumers want ascending.
-            .sort((a: FenixEvent, b: FenixEvent) => a.id - b.id)
+          const rows = listEvents({ phase, limit: BURST_LIMIT, sinceId })
           if (rows.length > 0) {
             for (const r of rows) {
-              enqueue('event', JSON.stringify(r))
-              sinceId = Math.max(sinceId, r.id)
+              if (!emit('event', JSON.stringify(r))) return
+              // listEvents is ASC; track the highest emitted id only.
+              if (r.id > sinceId) sinceId = r.id
             }
             lastEventTs = Date.now()
           } else if (Date.now() - lastEventTs > MAX_IDLE_MS) {
-            enqueue('bye', JSON.stringify({ reason: 'idle-timeout' }))
-            controller.close()
+            emit('bye', JSON.stringify({ reason: 'idle-timeout' }))
+            closed = true
+            try {
+              controller.close()
+            } catch {
+              /* already closed */
+            }
             return
           } else {
             // Heartbeat so intermediaries don't kill the connection.
-            controller.enqueue(encoder.encode(`: ping\n\n`))
+            safeEnqueue(encoder.encode(`: ping\n\n`))
           }
         } catch (err) {
-          enqueue('error', JSON.stringify({ message: (err as Error).message }))
+          emit('error', JSON.stringify({ message: (err as Error).message }))
         }
       }
 
@@ -62,6 +80,7 @@ export async function GET(req: Request): Promise<Response> {
       void tick()
 
       req.signal.addEventListener('abort', () => {
+        closed = true
         clearInterval(interval)
         try {
           controller.close()

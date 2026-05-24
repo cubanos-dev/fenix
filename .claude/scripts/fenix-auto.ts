@@ -203,12 +203,20 @@ function cmdStatus(args: Argv): void {
        FROM events ORDER BY id DESC LIMIT 1`,
     )
     .get()
-  const pendingApprovals = db
-    .prepare(
-      `SELECT stage, payload_id FROM approvals
-       WHERE 0 = 1`, // approvals table only holds approved rows; pending is derived elsewhere
-    )
-    .all()
+  // approvals table only holds approved rows; pending must be derived from
+  // the required-stage set: 'research' + 'tech' + one 'design:<v>' per
+  // versions row. The orchestrator (Claude) reads this to decide what to
+  // ask the user to approve next, so the field must be accurate.
+  const versionNames = (
+    db.prepare(`SELECT name FROM versions ORDER BY name`).all() as Array<{ name: string }>
+  ).map((v) => v.name)
+  const requiredStages: string[] = ['research', 'tech', ...versionNames.map((v) => `design:${v}`)]
+  const approvedStages = new Set(
+    (db.prepare(`SELECT stage FROM approvals`).all() as Array<{ stage: string }>).map((r) => r.stage),
+  )
+  const pendingApprovals = requiredStages
+    .filter((s) => !approvedStages.has(s))
+    .map((stage) => ({ stage, payload_id: '' }))
   const recentGates = db
     .prepare(
       `SELECT phase_id, gate_name, status, json_path, ran_at

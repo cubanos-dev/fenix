@@ -200,14 +200,14 @@ async function main(): Promise<number> {
   if (records.length === 0) {
     const { path } = writeGateArtifact({
       phase,
-      gate: 'visual-diff',
+      gate: 'visual:diff',
       verdict: 'soft-warn',
       hard: true,
       startedAt,
       reasons: ['No @state-id / @pen tagged stories — nothing to diff (gate skipped)'],
       details: { pixelmatch_available: false, results: [] },
     })
-    process.stdout.write(`visual-diff: soft-warn → ${relative(repoRoot, path)}\n`)
+    process.stdout.write(`visual:diff: soft-warn → ${relative(repoRoot, path)}\n`)
     return 0
   }
 
@@ -316,7 +316,7 @@ async function main(): Promise<number> {
 
   const { path } = writeGateArtifact({
     phase,
-    gate: 'visual-diff',
+    gate: 'visual:diff',
     verdict,
     hard: true,
     startedAt,
@@ -324,7 +324,7 @@ async function main(): Promise<number> {
     details: { pixelmatch_available: pixelmatchAvailable, results },
   })
 
-  process.stdout.write(`visual-diff: ${verdict} → ${relative(repoRoot, path)}\n`)
+  process.stdout.write(`visual:diff: ${verdict} → ${relative(repoRoot, path)}\n`)
   for (const r of reasons) process.stdout.write(`  • ${r}\n`)
 
   return verdictExitCode(verdict, true)
