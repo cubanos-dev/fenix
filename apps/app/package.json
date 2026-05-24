@@ -18,10 +18,10 @@
     "validate": "tsc --noEmit && biome check . && vitest run",
     "e2e": "playwright test",
     "e2e:ui": "playwright test --ui",
+    "e2e:install": "playwright install chromium",
     "storybook": "storybook dev -p 6007 --ci",
     "build-storybook": "storybook build",
-    "db:migrate": "bun run lib/migrator.ts",
-    "postinstall": "playwright install chromium"
+    "db:migrate": "bun run lib/migrator.ts"
   },
   "dependencies": {
     "@fenix/auth": "workspace:*",

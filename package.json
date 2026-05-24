@@ -17,6 +17,7 @@
     "db:migrate": "bun run --cwd apps/app lib/migrator.ts",
     "env:pull": "vercel env pull .env.local",
     "prepare": "lefthook install",
+    "postinstall": "cd apps/app && bun run e2e:install",
     "fenix": "bun .claude/scripts/fenix-auto.ts",
     "fenix:init-db": "bun .claude/scripts/fenix-auto.ts init-db",
     "fenix:status": "bun .claude/scripts/fenix-auto.ts status",
