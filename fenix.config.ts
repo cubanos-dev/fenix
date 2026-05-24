@@ -61,6 +61,23 @@ export interface FenixConfig {
   agentRetry: {
     onTransientErrors: number
   }
+
+  /**
+   * Hard spend ceilings in USD. The orchestrator tallies token-cost estimates
+   * per stage and halts with STOP-confirm when a stage exceeds its budget.
+   * `total` is a circuit breaker across the whole loop. Numbers are rough
+   * guides; tune after the first real run.
+   */
+  budget: {
+    perStageUsd: {
+      research: number
+      design: number
+      tech: number
+      phases: number
+      build: number
+    }
+    totalUsd: number
+  }
 }
 
 export default {
@@ -104,5 +121,16 @@ export default {
 
   agentRetry: {
     onTransientErrors: 2,
+  },
+
+  budget: {
+    perStageUsd: {
+      research: 5,
+      design: 15,
+      tech: 5,
+      phases: 5,
+      build: 50,
+    },
+    totalUsd: 100,
   },
 } satisfies FenixConfig

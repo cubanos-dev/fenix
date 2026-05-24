@@ -14,6 +14,7 @@ export default defineConfig({
   },
   test: {
     name: 'storybook',
+    passWithNoTests: false,
     browser: {
       enabled: true,
       headless: true,

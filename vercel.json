@@ -8,10 +8,6 @@
     "app": {
       "entrypoint": "apps/app",
       "routePrefix": "/"
-    },
-    "api": {
-      "entrypoint": "apps/api/main.py",
-      "routePrefix": "/server"
     }
   }
 }
