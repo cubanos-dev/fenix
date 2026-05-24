@@ -17,7 +17,6 @@
     "db:migrate": "bun run --cwd apps/app lib/migrator.ts",
     "env:pull": "vercel env pull .env.local",
     "prepare": "lefthook install",
-    "postinstall": "cd apps/app && bun run e2e:install",
     "fenix": "bun .claude/scripts/fenix-auto.ts",
     "fenix:init-db": "bun .claude/scripts/fenix-auto.ts init-db",
     "fenix:status": "bun .claude/scripts/fenix-auto.ts status",
@@ -43,12 +42,12 @@
     "init-project": "bun scripts/init-project.ts"
   },
   "devDependencies": {
-    "@types/pixelmatch": "^5.2.6",
-    "@types/pngjs": "^6.0.5",
-    "lefthook": "^2.1.4",
-    "pixelmatch": "^7.1.0",
-    "pngjs": "^7.0.0",
-    "tailwindcss": "^4.2.2",
-    "turbo": "^2.5.0"
+    "@types/pixelmatch": "5.2.6",
+    "@types/pngjs": "6.0.5",
+    "lefthook": "2.1.8",
+    "pixelmatch": "7.2.0",
+    "pngjs": "7.0.0",
+    "tailwindcss": "4.3.0",
+    "turbo": "2.9.14"
   }
 }

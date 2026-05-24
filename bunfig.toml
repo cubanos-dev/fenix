@@ -1,0 +1,4 @@
+[install]
+# Pin every newly added dep to an exact version. No `^`, no `~`. Enforced
+# at commit time by the `pin-versions` lefthook job — see lefthook.yml.
+exact = true

@@ -15,9 +15,9 @@
     "validate": "tsc --noEmit && biome check ."
   },
   "devDependencies": {
-    "@biomejs/biome": "^2.4.0",
+    "@biomejs/biome": "2.4.15",
     "@fenix/biome-config": "workspace:*",
     "@fenix/typescript-config": "workspace:*",
-    "typescript": "^6.0.0"
+    "typescript": "6.0.3"
   }
 }

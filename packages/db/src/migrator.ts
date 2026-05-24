@@ -1,4 +1,6 @@
-import { Kysely, Migrator, FileMigrationProvider, PostgresDialect } from 'kysely'
+import { Kysely, PostgresDialect } from 'kysely'
+import type { PostgresPool } from 'kysely'
+import { Migrator, FileMigrationProvider } from 'kysely/migration'
 import { Pool, neonConfig } from '@neondatabase/serverless'
 import ws from 'ws'
 import * as path from 'node:path'
@@ -14,7 +16,7 @@ export async function runMigrations(migrationsPath: string) {
   })
 
   const db = new Kysely({
-    dialect: new PostgresDialect({ pool }),
+    dialect: new PostgresDialect({ pool: pool as unknown as PostgresPool }),
   })
 
   const migrator = new Migrator({

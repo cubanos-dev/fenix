@@ -1,4 +1,5 @@
 import { Kysely, PostgresDialect } from 'kysely'
+import type { PostgresPool } from 'kysely'
 import type { Database } from './types'
 
 async function createPool() {
@@ -27,8 +28,12 @@ async function createPool() {
 export const pool = await createPool()
 
 function createDb() {
+  // Kysely 0.29 tightened PostgresPool for its query-cancellation API; pg's
+  // and @neondatabase/serverless's Pool shapes are structurally compatible
+  // at runtime but don't satisfy the new interface until upstream types
+  // catch up.
   return new Kysely<Database>({
-    dialect: new PostgresDialect({ pool }),
+    dialect: new PostgresDialect({ pool: pool as unknown as PostgresPool }),
   })
 }
 

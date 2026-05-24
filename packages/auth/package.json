@@ -10,14 +10,14 @@
     "./roles": "./src/roles.ts"
   },
   "dependencies": {
-    "better-auth": "^1.5.6",
+    "better-auth": "1.6.11",
     "@fenix/db": "workspace:*"
   },
   "peerDependencies": {
-    "next": "^16.0.0"
+    "next": "16.2.6"
   },
   "devDependencies": {
-    "next": "^16.0.0",
-    "typescript": "^6.0.0"
+    "next": "16.2.6",
+    "typescript": "6.0.3"
   }
 }

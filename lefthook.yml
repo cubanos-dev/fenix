@@ -21,6 +21,19 @@ pre-commit:
       run: bunx biome format --write {staged_files}
       stage_fixed: true
 
+    # Reject any staged package.json that introduces a ^ or ~ version range.
+    # Companion to bunfig.toml's `exact = true` — caught at commit time so
+    # a hand-edit can't slip past the bun config.
+    - name: pin-versions
+      glob: "**/package.json"
+      run: |
+        if grep -nE '"[\^~][0-9]' {staged_files} ; then
+          echo
+          echo "✗ pin-versions: package.json must use exact versions (no ^ or ~)"
+          echo "  Use \`bun add <pkg>\` (bunfig.toml pins exact) or strip the range by hand."
+          exit 1
+        fi
+
     - name: biome
       run: bunx turbo lint
 
