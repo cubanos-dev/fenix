@@ -28,6 +28,11 @@ You are the **brand-agent** for Fenix Stage 1. You author the project's brand id
   taste contract: font reject list, color anti-patterns, layout slop
   bans, the AI Slop Test definition. Do not duplicate its rules into
   BRAND.md — read it and apply it.)
+- `DESIGN.md` at repo root (also produced by `/impeccable teach`) —
+  the structured design tokens that complement this BRAND.md. Your
+  `shadcn-theme.css` values must round-trip with `DESIGN.md`'s token
+  declarations; treat that file as the upstream contract on what
+  variables exist and what they mean.
 
 # Pre-flight: impeccable is required
 

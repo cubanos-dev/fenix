@@ -67,6 +67,12 @@ export interface FenixConfig {
    * per stage and halts with STOP-confirm when a stage exceeds its budget.
    * `total` is a circuit breaker across the whole loop. Numbers are rough
    * guides; tune after the first real run.
+   *
+   * `designImpeccableMaxIterations` caps how many times the design stage
+   * re-runs Pencil to address impeccable audit findings before bailing
+   * to user STOP-confirm. Each iteration = one Pencil call (1–5 min, ~$1)
+   * + two impeccable calls (~cents). 3 is a sensible cap; raise it for
+   * brand-critical projects, lower it for cost-sensitive runs.
    */
   budget: {
     perStageUsd: {
@@ -77,6 +83,7 @@ export interface FenixConfig {
       build: number
     }
     totalUsd: number
+    designImpeccableMaxIterations: number
   }
 }
 
@@ -132,5 +139,6 @@ export default {
       build: 50,
     },
     totalUsd: 100,
+    designImpeccableMaxIterations: 3,
   },
 } satisfies FenixConfig

@@ -18,6 +18,10 @@ You write **one** artifact: `.planning/design/<version>-brief.md`.
 - `.impeccable.md` — the project's design discipline. Read it; do not
   duplicate its rules into the brief. Impeccable's audit is what makes
   the brief defensible against AI-slop output.
+- `DESIGN.md` at repo root (also produced by `/impeccable teach`) —
+  the structured design tokens (typography stack, spacing scale, color
+  intents, motion principles) that complement BRAND.md's prose. The
+  brief should cite tokens by name, not by value.
 - For v1+: prior version's pen via Pencil MCP (`open_document` + `snapshot_layout` + `get_screenshot`) to understand what's there and what's changing.
 
 # Pre-flight: impeccable is required

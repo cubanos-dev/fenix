@@ -83,11 +83,42 @@ bun run fenix:event research <agent-name>-completed --payload '<their JSON exit>
    - `--mode=author` for `version=mvp`
    - `--mode=iterate-from-prior` for `version=vN` (N ≥ 1) on the first pass of that version
    - `--mode=feedback` when pending feedback rows exist for this version (see Feedback loop below)
-3. **STOP-confirm**: tell the user where to look at exports (`pens/exports/<version>/`) and how to approve / give feedback:
+
+3. **Impeccable audit loop (auto-iteration before user review).** After step 2 returns success, audit Pencil's output with impeccable. Repeat until clean or budget exhausted:
+
+   ```
+   iter = 0
+   max_iter = fenix.config.ts → budget.designImpeccableMaxIterations   (default 3)
+   while iter < max_iter:
+     bun run pen:extract                                                # refresh inventory
+     findings = Skill(impeccable, "critique pens/inventory/")           # structural review
+     findings += Skill(impeccable, "audit pens/exports/<v>.png")        # visual review
+     hard = findings.filter(severity == "hard")
+     if hard.length == 0: break
+     materialize FEEDBACK.md from `hard`:
+       ## source: impeccable-audit
+       ## iteration: <iter>
+       (then one `## frame: ... ## feature: impeccable-audit ## change: ... ## why: ...` block per finding)
+     spawn subagent_type="fenix-design-runner" with --mode=feedback
+     iter += 1
+     bun run fenix:event design impeccable-iteration --payload '{"version":"<v>","iter":<iter>,"findings":<n>}'
+
+   if hard.length > 0 after the loop:
+     # max-iter reached and impeccable still has hard findings
+     surface the residual findings in the STOP-confirm message
+     # (the user can still approve, but they see what wasn't auto-fixed)
+   ```
+
+   The audit loop is on by default. To disable for a one-off run, set
+   `--no-impeccable` in the user's `/fenix-auto design <v>` invocation
+   (advanced; intended only for debugging Pencil itself).
+
+4. **STOP-confirm**: tell the user where to look at exports (`pens/exports/<version>/`) and how to approve / give feedback:
    - Approve: `bun run fenix:approve --stage design:<version>`
    - Feedback: `bun run fenix:feedback --version <version> --change "…" --why "…"`
+   - **Always include the impeccable audit summary** in the message: `Auto-iterated <iter> time(s); <n> hard findings remain unaddressed: <one-line each>.` If iter == 0, say `First pass passed impeccable clean.`
 
-**Feedback loop:** if `bun run fenix:status --json` shows pending feedback rows for this version on the next invocation, materialize them into `FEEDBACK.md` at repo root (one block per pending row in the schema the agent expects), then spawn `subagent_type="fenix-design-runner"` with `--mode=feedback`. Loop until approval lands.
+**Feedback loop:** if `bun run fenix:status --json` shows pending feedback rows for this version on the next invocation, materialize them into `FEEDBACK.md` at repo root (one block per pending row in the schema the agent expects, with `## source: user` header), then spawn `subagent_type="fenix-design-runner"` with `--mode=feedback`. After it returns, **re-run the impeccable audit loop** (step 3) — user feedback can introduce new slop that impeccable still needs to catch. Loop until approval lands.
 
 **On approval:** record version row, commit pen state with `feat(design): <version> approved by user`, append event `design <version>-approved`.
 

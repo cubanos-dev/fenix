@@ -31,14 +31,30 @@ If `--mode` is missing or unrecognized, halt with a structured error.
 
 ## FEEDBACK.md expected shape (feedback mode only)
 
+Optional header (one line, before any `## frame:` block):
+
 ```markdown
-## frame: <name>          # which screen/frame the change applies to
-## feature: F<NN>         # the feature this frame belongs to (from FEATURES.md)
+## source: <user | impeccable-audit>   # default: user (omit if user-written)
+## iteration: <N>                       # only present when source=impeccable-audit
+```
+
+One or more frame blocks:
+
+```markdown
+## frame: <name>          # which screen/frame the change applies to (or "global")
+## feature: F<NN>         # the feature this frame belongs to (from FEATURES.md);
+                          # use "impeccable-audit" sentinel when source is the auditor
 ## change: <what>         # the specific change requested
-## why: <reason>          # why — anchors the iteration to user intent
+## why: <reason>          # why — anchors the iteration to user intent (user mode)
+                          # or which impeccable rule was violated (audit mode)
 ```
 
 Multiple blocks per file, one per frame.
+
+When `source: impeccable-audit` is present, this FEEDBACK.md was
+synthesized by the orchestrator from impeccable's findings, not the
+user. You still treat it verbatim and run Pencil with it — the
+iteration counter exists so the orchestrator can bound the audit loop.
 
 ---
 
