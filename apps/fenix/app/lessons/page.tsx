@@ -2,6 +2,7 @@ import { existsSync, readFileSync } from 'node:fs'
 import { resolve } from 'node:path'
 import Link from 'next/link'
 import { EmptyState } from '@/components/empty-state'
+import { Markdown } from '@/components/markdown'
 import { cn } from '@/lib/cn'
 import { relativeTime } from '@/lib/format'
 import { listLessons } from '@/lib/queries'
@@ -171,8 +172,8 @@ function LessonBody({ bodyMdPath }: { bodyMdPath: string }) {
   const body = raw.replace(/^---\n[\s\S]*?\n---\n?/, '').trim()
   if (body.length === 0) return null
   return (
-    <pre className="whitespace-pre-wrap break-words text-sm text-foreground font-mono bg-muted/30 rounded p-3 mt-2">
-      {body}
-    </pre>
+    <div className="bg-muted/30 rounded p-3 mt-2">
+      <Markdown body={body} />
+    </div>
   )
 }

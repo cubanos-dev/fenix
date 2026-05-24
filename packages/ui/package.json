@@ -38,6 +38,7 @@
     "@biomejs/biome": "2.4.15",
     "@fenix/biome-config": "workspace:*",
     "@fenix/typescript-config": "workspace:*",
+    "@tailwindcss/typography": "0.5.19",
     "@types/react": "19.2.15",
     "@types/react-dom": "19.2.3",
     "react": "19.2.6",

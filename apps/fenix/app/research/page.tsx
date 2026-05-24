@@ -1,5 +1,6 @@
 import Link from 'next/link'
 import { EmptyState } from '@/components/empty-state'
+import { Markdown } from '@/components/markdown'
 import { cn } from '@/lib/cn'
 import { readFeaturesDoc, readResearchDoc } from '@/lib/project'
 
@@ -73,13 +74,9 @@ function DocBody({ title, body, hint }: { title: string; body: string | null; hi
     )
   }
   return (
-    <article className="prose prose-invert prose-sm max-w-none rounded-lg border border-border bg-card p-6">
+    <article className="rounded-lg border border-border bg-card p-6">
       <div className="text-xs text-muted-foreground font-mono mb-4">{hint}</div>
-      {/* Render as preformatted markdown — a real markdown renderer would
-          come from @fenix/ui once that ships markdown primitives. For now
-          we present raw text in a readable monospace block so citation URLs
-          and quoted text remain legible. */}
-      <pre className="whitespace-pre-wrap break-words text-foreground text-sm font-mono">{body}</pre>
+      <Markdown body={body} />
     </article>
   )
 }
