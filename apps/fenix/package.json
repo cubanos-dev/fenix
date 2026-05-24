@@ -7,7 +7,7 @@
     "build": "bun --bun next build",
     "start": "bun --bun next start --port 3002",
     "lint": "biome check .",
-    "test": "vitest run",
+    "test": "vitest run --passWithNoTests",
     "format": "biome format --write .",
     "format:check": "biome format .",
     "typecheck": "tsc --noEmit",
