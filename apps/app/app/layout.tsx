@@ -1,10 +1,10 @@
+import { Toaster } from '@fenix/ui/components/toast'
 import { GeistMono } from 'geist/font/mono'
 import { GeistSans } from 'geist/font/sans'
 import type { Metadata } from 'next'
 import { NextIntlClientProvider } from 'next-intl'
 import { getLocale, getMessages } from 'next-intl/server'
 import { ThemeProvider } from 'next-themes'
-import { Toaster } from 'sonner'
 import './globals.css'
 
 export const metadata: Metadata = {
@@ -22,7 +22,7 @@ export default async function RootLayout({ children }: { children: React.ReactNo
         <NextIntlClientProvider messages={messages}>
           <ThemeProvider attribute="class" defaultTheme="dark" enableSystem disableTransitionOnChange>
             {children}
-            <Toaster richColors position="bottom-right" />
+            <Toaster position="bottom-right" />
           </ThemeProvider>
         </NextIntlClientProvider>
       </body>

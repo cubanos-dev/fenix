@@ -1,6 +1,3 @@
-import { type ClassValue, clsx } from 'clsx'
-import { twMerge } from 'tailwind-merge'
-
-export function cn(...inputs: ClassValue[]) {
-  return twMerge(clsx(inputs))
-}
+// Re-export from @fenix/ui — single source of the cn helper so apps and
+// the design-system package never drift on tailwind-merge semantics.
+export { cn } from '@fenix/ui/lib/cn'
