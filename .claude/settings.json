@@ -7,17 +7,8 @@
       "Bash(bunx biome *)",
       "Bash(bunx turbo *)",
       "Bash(node *)",
-      "Bash(npx pencil *)"
+      "Bash(npx pencil *)",
+      "Bash(claude mcp *)"
     ]
-  },
-  "mcpServers": {
-    "context7": {
-      "command": "npx",
-      "args": ["-y", "@upstash/context7-mcp"]
-    },
-    "playwright": {
-      "command": "npx",
-      "args": ["-y", "@playwright/mcp@latest"]
-    }
   }
 }

@@ -102,7 +102,7 @@ directory name. Milestones = git tags. Git history is the handoff.
 - **Web framework:** Next.js 16.2.0 (App Router) + React Compiler 1.0 (`reactCompiler: true` in every app)
 - **Runtime:** Bun 1.3+
 - **Monorepo:** Turborepo
-- **Auth:** BetterAuth + org plugin (BetterAuth MCP installed)
+- **Auth:** BetterAuth + org plugin (`betterauth` MCP wired in `.mcp.json` → `https://mcp.better-auth.com/mcp`)
 - **Database:** Neon Postgres + Kysely
 - **Email:** Resend + React Email
 - **Storage:** Cloudflare R2 via S3 SDK
@@ -124,6 +124,35 @@ directory name. Milestones = git tags. Git history is the handoff.
 
 **Doc hierarchy** per stack component: provider MCP (tier 1) → Context7
 (tier 2) → WebSearch (tier 3). The `tech-researcher` agent enforces this.
+
+## MCP wiring
+
+Project-scoped MCPs live in `.mcp.json` at repo root (the **canonical
+location** per Claude Code docs — never put `mcpServers` in
+`.claude/settings.json`). Always-on, committed to git, available to all
+forks immediately after `bun create`:
+
+- `context7` (stdio) — Context7 docs fetcher
+- `playwright` (stdio) — `@playwright/mcp` for browser drive
+- `betterauth` (http) — `https://mcp.better-auth.com/mcp` for auth-stack docs
+
+User-scope (NOT in `.mcp.json`):
+
+- `pencil` — auto-registers when the user opens the Pencil desktop app
+  for the first time. `/fenix-init` runs `claude mcp list` to verify
+  it's present and warns the user to install Pencil from pencil.dev if
+  missing.
+
+Opt-in MCPs (Stripe, Vercel AI Gateway, Sentry, PostHog) are added by
+`/fenix-init` via `claude mcp add --scope project <name> <url>` based on
+the user's Q6 answers. Each writes through the CLI rather than direct
+JSON edits — the CLI enforces the right schema.
+
+Agent frontmatter `mcpServers:` is a list of string references (e.g.
+`mcpServers: [context7, pencil]`). Each name must resolve to a server
+configured in `.mcp.json` (project scope) or `~/.claude.json` (user
+scope). String refs share the parent session's connection; inline
+definitions are scoped to the subagent only.
 
 ## Workspace layout
 

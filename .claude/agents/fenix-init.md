@@ -30,9 +30,28 @@ Walk the user through the seven structured questions below using `AskUserQuestio
    ```
    This single script rewrites every `package.json`, every `*.ts/.tsx/.js/.mjs/.css/.json/.md` import, every `extends` chain (`@fenix/biome-config`, `@fenix/typescript-config`), in one atomic pass. Do **not** edit those files individually — the script is the contract. After it finishes, run `bun install` so `bun.lock` picks up the new workspace names.
 3. Write `docs/STACK.md` filtered to the user's opt-ins (omit Stripe/Vercel-AI-Gateway/Mapbox rows if not selected).
-4. Update `.claude/settings.json` `mcpServers` block:
-   - Always-on: keep Context7, Playwright; add BetterAuth, Pencil.
-   - Conditional: add Stripe MCP only if payments opted-in; add AI Gateway MCP only if LLM opted-in; add Sentry + PostHog MCPs only if those MCPs exist (check `npm view <pkg> versions` via `Bash`; skip if not published).
+4. **Configure opt-in MCPs.** The template ships `.mcp.json` at repo
+   root with the always-on project-scoped MCPs already wired:
+   - `context7` (stdio: `npx -y @upstash/context7-mcp`)
+   - `playwright` (stdio: `npx -y @playwright/mcp@latest`)
+   - `betterauth` (http: `https://mcp.better-auth.com/mcp`)
+
+   For each opt-in the user selected in Q6, append to `.mcp.json` by
+   running `claude mcp add --scope project` (the canonical CLI — do
+   NOT hand-edit `.mcp.json`; `claude mcp add` writes the right schema):
+
+   - Payments: `claude mcp add --transport http --scope project stripe https://mcp.stripe.com`
+   - LLM (Vercel AI Gateway): `claude mcp add --transport http --scope project ai-gateway https://ai-gateway.vercel.sh/mcp` (verify URL at runtime — if the call returns 404, prompt the user to point at the right Vercel AI Gateway MCP URL or skip)
+   - Sentry: `claude mcp add --transport http --scope project sentry https://mcp.sentry.dev/mcp`
+   - PostHog: `claude mcp add --transport http --scope project posthog https://mcp.posthog.com/mcp` (probe URL via `WebFetch` first; if it doesn't exist yet, skip and warn)
+
+   Do NOT touch `pencil` here — Pencil is a desktop app and its MCP
+   auto-registers at user-scope when the user opens the app for the
+   first time. After all opt-in MCPs are wired, run `claude mcp list`
+   via `Bash` and verify `pencil` shows up. If not, surface a warning
+   in the exit JSON (`pencil_mcp_registered: false`) telling the user
+   to install Pencil from pencil.dev and open it once before running
+   `/fenix-auto research`.
 5. **Verify** `apps/fenix/` already exists (it ships with the template) and that its `package.json` was correctly renamed by step 2. Do not re-scaffold it. If for some reason the directory is missing (manual deletion, partial clone), halt with `apps/fenix missing — re-clone the template`.
 6. Create empty `.planning/fenix.db` by running `bun run fenix:init-db` (the pre-flight in `/fenix-init` may have done this already; the script is idempotent).
 7. **Install the `impeccable` skill** (Fenix's design taste contract — the brand-agent and design-planner will halt without it, and the design stage runs every Pencil output through it). Run `npx skills add pbakaus/impeccable` via `Bash` (auto-detects Claude Code as the harness and places the skill files under `.claude/skills/impeccable/`). If `npx skills add` is not on PATH or the network call fails, fall back to manually cloning the repo and copying its `dist/claude-code/.claude/skills/impeccable` directory in (the script `scripts/init-project.ts` knows the fallback path). On any install failure, proceed with the rest of init but include `impeccable_installed: false` in the exit JSON and surface a one-line warning telling the user to install it manually before running `/fenix-auto research`. Do **not** run `/impeccable teach` here — that step belongs after `docs/PRODUCT.md` is filled by the user, which happens between init and research.
@@ -57,6 +76,7 @@ On success, emit a single JSON block to stdout:
   "user_idea_path": "USER_IDEA.md",
   "opt_ins": { "payments": true|false, "llm": true|false, "geocoding": true|false },
   "impeccable_installed": true|false,
+  "pencil_mcp_registered": true|false,
   "next_command": "/fenix-auto research"
 }
 ```
