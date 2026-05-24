@@ -81,7 +81,7 @@ directory name. Milestones = git tags. Git history is the handoff.
 
 ## Stack (locked — see `docs/STACK.md` for the full table)
 
-- **Web framework:** Next.js 16.2.0 (App Router)
+- **Web framework:** Next.js 16.2.0 (App Router) + React Compiler 1.0 (`reactCompiler: true` in every app)
 - **Runtime:** Bun 1.3+
 - **Monorepo:** Turborepo
 - **Auth:** BetterAuth + org plugin (BetterAuth MCP installed)
@@ -273,6 +273,27 @@ immediately.
 - Request APIs are async: `await cookies()`, `await headers()`,
   `await params`, `await searchParams`.
 - Use `proxy.ts` (not `middleware.ts`) for route protection.
+
+### React Compiler
+
+React Compiler 1.0 is enabled in all three apps (`reactCompiler: true`
+in each `next.config.ts`). The compiler auto-memoizes components and
+hook return values at build time. This is non-negotiable for agents:
+
+- **Never** add `useMemo`, `useCallback`, or `memo` / `React.memo`. The
+  compiler handles this. Manual memoization is redundant under the
+  compiler and is rejected at pre-commit by the `no-manual-memo` hook.
+- Write idiomatic React: pure render functions, no mutation of props or
+  state inline, no `setState` during render. The compiler relies on the
+  Rules of React being followed; violating them produces wrong output,
+  not a runtime warning.
+- Dependency arrays for `useEffect` / `useLayoutEffect` still matter —
+  the compiler does not infer effect dependencies. Biome's
+  `useExhaustiveDependencies` rule still applies.
+- The only valid opt-out for a single file is the `'use no memo'`
+  directive at the very top. Use it sparingly — typically only when a
+  third-party hook requires referential stability the compiler can't
+  guarantee.
 
 ### Page / Screen / Component pattern
 

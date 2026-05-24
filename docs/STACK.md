@@ -14,6 +14,7 @@
 | Concern | Pick | Doc source (tier 1 → 3) |
 |---|---|---|
 | Web framework | Next.js 16.2.0 (App Router) | Vercel/Next docs → Context7 |
+| Auto-memoization | React Compiler 1.0 (`reactCompiler: true` in every app — no manual `useMemo` / `useCallback` / `memo`) | React docs → WebSearch |
 | Runtime | Bun 1.3+ | Bun docs → WebSearch |
 | Monorepo | Turborepo 2.5+ | Turbo docs → Context7 |
 | Deployment | Vercel | Vercel CLI + docs |
